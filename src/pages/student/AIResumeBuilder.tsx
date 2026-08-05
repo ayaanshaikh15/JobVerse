@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
-import { ChevronLeft, ChevronRight, CheckCircle2, Sparkles, Download, Plus, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, CheckCircle2, Sparkles, Download, Plus, X, FileText, AlertTriangle } from 'lucide-react'
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import { useResume } from '../../hooks/useResume'
 import { useAuth } from '../../hooks/useAuth'
@@ -61,9 +61,19 @@ export default function AIResumeBuilder() {
   const [generating, setGenerating] = useState(false)
   const [generated, setGenerated] = useState(false)
   const [aiResult, setAiResult] = useState(null)
+  const [locked, setLocked] = useState(false)
+  const [saved, setSaved] = useState(false)
   const navigate = useNavigate()
   const { user } = useAuth()
-  const { saveGenerated } = useResume(user?.id)
+  const { resume, loading, saveGenerated } = useResume(user?.id)
+
+  // The builder is one-time per account: if an AI-generated resume already
+  // exists, lock the builder and point the user to download their copy.
+  useEffect(() => {
+    if (loading || generated) return
+    if (resume?.resume_type === 'ai_generated') setLocked(true)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resume, loading])
 
   const updatePersonal = (field, val) => setData(d => ({ ...d, personal: { ...d.personal, [field]: val } }))
   const updateEducation = (field, val) => setData(d => ({ ...d, education: { ...d.education, [field]: val } }))
@@ -132,7 +142,15 @@ export default function AIResumeBuilder() {
       const result = await generateResume(data)
       setAiResult(result)
       setGenerated(true)
-      toast.success(`AI Resume generated! ATS Score: ${result.atsScore}% 🎉`)
+      setSaved(false)
+      try {
+        // Persist immediately so the one-time builder locks after creation.
+        await saveGenerated(result.resume)
+        setSaved(true)
+        toast.success(`AI Resume generated! ATS Score: ${result.atsScore}% 🎉`)
+      } catch (saveErr) {
+        toast.warning(`Resume generated (ATS ${result.atsScore}%) but could not be saved. Download it now to keep a copy.`)
+      }
     } catch (err) {
       toast.error(err?.message || 'AI generation failed. Please try again.')
     } finally {
@@ -147,14 +165,50 @@ export default function AIResumeBuilder() {
   }
 
   const handleSaveResume = async () => {
+    if (!aiResult?.resume) return
     try {
-      const payload = aiResult?.resume ?? data
-      await saveGenerated(payload)
+      await saveGenerated(aiResult.resume)
+      setSaved(true)
       toast.success('Resume saved to your account!')
-      navigate('/student/resume')
     } catch (err) {
       toast.error(err?.message || 'Failed to save resume')
     }
+  }
+
+  // One-time builder — already created, show download instead of the form.
+  if (locked) {
+    const downloadLocked = () => {
+      if (!resume?.content) return toast.error('No saved resume content found')
+      try {
+        downloadResumePdf(JSON.parse(resume.content))
+        toast.success('Resume downloaded as PDF!')
+      } catch {
+        toast.error('Could not read your saved resume')
+      }
+    }
+    return (
+      <DashboardLayout>
+        <div className="max-w-lg mx-auto text-center py-16">
+          <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center mx-auto mb-5 shadow-lg shadow-indigo-200">
+            <FileText size={32} className="text-white" />
+          </div>
+          <h1 className="text-2xl font-bold text-[#111827] mb-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
+            You&apos;ve already created your AI resume
+          </h1>
+          <p className="text-sm text-[#6B7280] mb-6 leading-relaxed">
+            The AI Resume Builder is available only once per account. Download your resume from My Resume — you won&apos;t be able to create it again.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <button onClick={downloadLocked} className="flex items-center justify-center gap-2 bg-indigo-600 text-white font-semibold text-sm px-6 py-3 rounded-xl hover:bg-indigo-700 transition-all shadow-md">
+              <Download size={16} /> Download Resume
+            </button>
+            <button onClick={() => navigate('/student/resume')} className="flex items-center justify-center gap-2 text-sm font-medium text-[#374151] bg-white border border-[#E2E8F0] px-6 py-3 rounded-xl hover:bg-[#F8FAFC] transition-all shadow-card">
+              Go to My Resume
+            </button>
+          </div>
+        </div>
+      </DashboardLayout>
+    )
   }
 
   const progress = ((step - 1) / (steps.length - 1)) * 100
@@ -371,6 +425,13 @@ export default function AIResumeBuilder() {
                       </div>
                     </div>
 
+                    <div className="mb-4 p-4 bg-amber-50 rounded-xl border border-amber-200 flex items-start gap-3">
+                      <AlertTriangle size={16} className="text-amber-600 shrink-0 mt-0.5" />
+                      <p className="text-xs text-amber-700 leading-relaxed">
+                        <span className="font-semibold">Download your resume now.</span> The AI Resume Builder is one-time only — once you leave this page you won&apos;t be able to generate it again.
+                      </p>
+                    </div>
+
                     {aiResult.feedback?.length > 0 && (
                       <div className="mb-4 p-4 bg-indigo-50 rounded-xl border border-indigo-100">
                         <p className="text-xs font-semibold text-indigo-700 mb-2">AI Improvement Suggestions</p>
@@ -462,11 +523,17 @@ export default function AIResumeBuilder() {
                     </div>
                     <div className="flex gap-2">
                       <button onClick={downloadResume} className="flex items-center gap-2 bg-indigo-600 text-white font-semibold text-sm px-5 py-2.5 rounded-xl hover:bg-indigo-700 transition-all shadow-md">
-                        <Download size={15} /> Download Resume
+                        <Download size={15} /> Download PDF
                       </button>
-                      <button onClick={handleSaveResume} className="flex items-center gap-2 text-sm font-medium text-[#374151] bg-[#F8FAFC] border border-[#E2E8F0] px-5 py-2.5 rounded-xl hover:bg-[#F1F5F9] transition-all">
-                        Save Resume
-                      </button>
+                      {saved ? (
+                        <span className="flex items-center gap-2 text-sm font-medium text-green-700 bg-green-50 border border-green-100 px-5 py-2.5 rounded-xl">
+                          <CheckCircle2 size={15} /> Saved to your account
+                        </span>
+                      ) : (
+                        <button onClick={handleSaveResume} className="flex items-center gap-2 text-sm font-medium text-[#374151] bg-[#F8FAFC] border border-[#E2E8F0] px-5 py-2.5 rounded-xl hover:bg-[#F1F5F9] transition-all">
+                          Save Resume
+                        </button>
+                      )}
                     </div>
                   </div>
                 )}

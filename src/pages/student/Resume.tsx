@@ -76,21 +76,39 @@ export default function Resume() {
           <p className="text-sm text-[#6B7280]">Upload your resume or let AI build one for you</p>
         </div>
 
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="relative bg-gradient-to-br from-indigo-600 to-violet-600 rounded-3xl p-6 mb-6 overflow-hidden">
-          <div className="absolute right-4 top-4 w-24 h-24 bg-white/5 rounded-full" />
-          <div className="absolute right-12 bottom-2 w-16 h-16 bg-white/5 rounded-full" />
-          <div className="relative">
-            <div className="flex items-center gap-2 mb-2">
-              <Sparkles size={18} className="text-indigo-200" />
-              <span className="text-xs font-semibold text-indigo-200">AI-Powered</span>
+        {!loading && resume?.resume_type === 'ai_generated' ? (
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="relative bg-gradient-to-br from-indigo-600 to-violet-600 rounded-3xl p-6 mb-6 overflow-hidden">
+            <div className="absolute right-4 top-4 w-24 h-24 bg-white/5 rounded-full" />
+            <div className="absolute right-12 bottom-2 w-16 h-16 bg-white/5 rounded-full" />
+            <div className="relative">
+              <div className="flex items-center gap-2 mb-2">
+                <CheckCircle2 size={18} className="text-indigo-200" />
+                <span className="text-xs font-semibold text-indigo-200">AI Resume Ready</span>
+              </div>
+              <h2 className="text-xl font-bold text-white mb-1" style={{ fontFamily: 'Poppins, sans-serif' }}>Your AI resume is ready</h2>
+              <p className="text-indigo-100 text-sm mb-4 max-w-sm">You&apos;ve already generated your AI resume — download it anytime, you won&apos;t be able to create a new one.</p>
+              <button onClick={downloadGenerated} className="inline-flex items-center gap-2 !bg-white text-indigo-700 font-semibold text-sm px-5 py-2.5 rounded-xl hover:shadow-lg transition-all">
+                <Download size={15} /> Download PDF
+              </button>
             </div>
-            <h2 className="text-xl font-bold text-white mb-1" style={{ fontFamily: 'Poppins, sans-serif' }}>Build an ATS-Friendly Resume</h2>
-            <p className="text-indigo-100 text-sm mb-4 max-w-sm">Our AI analyzes thousands of job descriptions to create a tailored, optimized resume that passes every ATS filter.</p>
-            <Link to="/student/resume/builder" className="inline-flex items-center gap-2 !bg-white text-indigo-700 font-semibold text-sm px-5 py-2.5 rounded-xl hover:shadow-lg transition-all">
-              <Sparkles size={15} /> Generate AI Resume
-            </Link>
-          </div>
-        </motion.div>
+          </motion.div>
+        ) : (
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="relative bg-gradient-to-br from-indigo-600 to-violet-600 rounded-3xl p-6 mb-6 overflow-hidden">
+            <div className="absolute right-4 top-4 w-24 h-24 bg-white/5 rounded-full" />
+            <div className="absolute right-12 bottom-2 w-16 h-16 bg-white/5 rounded-full" />
+            <div className="relative">
+              <div className="flex items-center gap-2 mb-2">
+                <Sparkles size={18} className="text-indigo-200" />
+                <span className="text-xs font-semibold text-indigo-200">AI-Powered</span>
+              </div>
+              <h2 className="text-xl font-bold text-white mb-1" style={{ fontFamily: 'Poppins, sans-serif' }}>Build an ATS-Friendly Resume</h2>
+              <p className="text-indigo-100 text-sm mb-4 max-w-sm">Our AI analyzes thousands of job descriptions to create a tailored, optimized resume that passes every ATS filter.</p>
+              <Link to="/student/resume/builder" className="inline-flex items-center gap-2 !bg-white text-indigo-700 font-semibold text-sm px-5 py-2.5 rounded-xl hover:shadow-lg transition-all">
+                <Sparkles size={15} /> Generate AI Resume
+              </Link>
+            </div>
+          </motion.div>
+        )}
 
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white rounded-2xl border border-[#E2E8F0] shadow-card p-6">
           <h2 className="font-semibold text-[#111827] mb-4" style={{ fontFamily: 'Poppins, sans-serif' }}>Upload Resume</h2>
