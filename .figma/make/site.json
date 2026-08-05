@@ -1,0 +1,10 @@
+{
+  "description": "Connects job seekers with tailored opportunities and employers with ideal candidates to streamline the hiring process and boost career growth.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
