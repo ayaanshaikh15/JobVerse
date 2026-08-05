@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Briefcase, Users, TrendingUp, PlusCircle, List, ArrowRight, ChevronRight } from 'lucide-react'
+import { Briefcase, Users, TrendingUp, PlusCircle, List, ArrowRight, ChevronRight, Clock, XCircle } from 'lucide-react'
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import { useRecruiterJobs } from '../../hooks/useJobs'
 import { useRecruiterApplications } from '../../hooks/useApplications'
@@ -8,7 +8,7 @@ import { useAuth } from '../../hooks/useAuth'
 import { statusColors, statusLabels, formatDate } from '../../lib/utils'
 
 export default function RecruiterDashboard() {
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const { jobs: myJobs, loading: jobsLoading } = useRecruiterJobs(user?.id)
   const { applications: applicants, loading: appsLoading } = useRecruiterApplications(user?.id)
 
@@ -74,6 +74,29 @@ export default function RecruiterDashboard() {
 
   return (
     <DashboardLayout>
+      {profile?.status === 'pending' && (
+        <div className="mb-5 bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-start gap-3">
+          <div className="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
+            <Clock size={16} className="text-amber-600" />
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-amber-700">Account pending approval</p>
+            <p className="text-xs text-amber-600 mt-0.5">Your company registration is awaiting admin approval. You will be able to post jobs once approved.</p>
+          </div>
+        </div>
+      )}
+      {profile?.status === 'rejected' && (
+        <div className="mb-5 bg-red-50 border border-red-200 rounded-2xl p-4 flex items-start gap-3">
+          <div className="w-9 h-9 rounded-xl bg-red-100 flex items-center justify-center shrink-0">
+            <XCircle size={16} className="text-red-600" />
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-red-700">Company registration rejected</p>
+            <p className="text-xs text-red-600 mt-0.5">Your company registration was rejected by the admin. Contact support if you believe this is a mistake.</p>
+          </div>
+        </div>
+      )}
+
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {stats.map(({ label, value, icon: Icon, color, bg, change }, i) => (

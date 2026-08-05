@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { toast } from 'sonner'
-import { Edit2, LogOut, Building2, Mail, Phone, Camera, Sparkles } from 'lucide-react'
+import { Edit2, LogOut, Building2, Mail, Phone, Camera, Sparkles, Globe } from 'lucide-react'
 import SignOutModal from '../../components/SignOutModal'
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import { useAuth } from '../../hooks/useAuth'
@@ -13,7 +13,7 @@ export default function RecruiterProfile() {
   const navigate = useNavigate()
   const [editing, setEditing] = useState(false)
   const [showLogout, setShowLogout] = useState(false)
-  const [form, setForm] = useState({ name: profile?.name || '', phone: profile?.phone || '' })
+  const [form, setForm] = useState({ name: profile?.name || '', phone: profile?.phone || '', college: profile?.college || '', website: profile?.website || '' })
   const inputCls = 'w-full border border-[#E2E8F0] rounded-xl px-3.5 py-2.5 text-sm text-[#111827] placeholder-[#9CA3AF] focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all bg-white'
 
   const incomplete = profile ? !isProfileComplete(profile) : false
@@ -24,6 +24,8 @@ export default function RecruiterProfile() {
     setForm(f => ({
       name: f.name || profile.name || '',
       phone: f.phone || profile.phone || '',
+      college: f.college || profile.college || '',
+      website: f.website || profile.website || '',
     }))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile])
@@ -103,8 +105,16 @@ export default function RecruiterProfile() {
                 <input className={inputCls} value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
               </div>
               <div>
+                <label className="block text-xs font-semibold text-[#374151] mb-1.5">Company Name</label>
+                <input className={inputCls} placeholder="e.g. Stripe" value={form.college} onChange={e => setForm(f => ({ ...f, college: e.target.value }))} />
+              </div>
+              <div>
                 <label className="block text-xs font-semibold text-[#374151] mb-1.5">Phone</label>
                 <input className={inputCls} placeholder="+1 415 555 0123" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-[#374151] mb-1.5">Website</label>
+                <input className={inputCls} placeholder="e.g. stripe.com" value={form.website} onChange={e => setForm(f => ({ ...f, website: e.target.value }))} />
               </div>
             </div>
             <div className="flex gap-2 mt-4">
@@ -120,7 +130,8 @@ export default function RecruiterProfile() {
             {[
               { icon: Mail, label: 'Email', value: profile?.email },
               { icon: Phone, label: 'Phone', value: profile?.phone || 'Not added' },
-              { icon: Building2, label: 'Company', value: profile?.college || 'Stripe' },
+              { icon: Building2, label: 'Company', value: profile?.college || '—' },
+              { icon: Globe, label: 'Website', value: profile?.website || 'Not added' },
             ].map(({ icon: Icon, label, value }) => (
               <div key={label} className="flex items-center gap-3 py-2 border-b border-[#F1F5F9] last:border-0">
                 <div className="w-8 h-8 rounded-xl bg-[#F8FAFC] flex items-center justify-center"><Icon size={14} className="text-[#6B7280]" /></div>

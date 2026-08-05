@@ -6,6 +6,7 @@ import { Upload, FileText, Trash2, Sparkles, Eye, Download, CheckCircle2 } from 
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import { useResume } from '../../hooks/useResume'
 import { useAuth } from '../../hooks/useAuth'
+import { downloadResumePdf } from '../../lib/resumePdf'
 
 export default function Resume() {
   const { user } = useAuth()
@@ -46,6 +47,18 @@ export default function Resume() {
 
   const downloadGenerated = () => {
     if (!resume?.content) return toast.error('No resume content found')
+    try {
+      const parsed = JSON.parse(resume.content)
+      // AI-generated resumes (new format) have a summary + education[] array.
+      // Older saved payloads have a different shape — fall back to raw JSON.
+      if (parsed && (parsed.summary || Array.isArray(parsed.education))) {
+        downloadResumePdf(parsed)
+        toast.success('Resume downloaded as PDF!')
+        return
+      }
+    } catch {
+      // not JSON — fall through to raw download below
+    }
     const blob = new Blob([resume.content], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')

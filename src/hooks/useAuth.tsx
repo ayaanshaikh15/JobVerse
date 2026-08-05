@@ -116,7 +116,15 @@ export function AuthProvider({ children }) {
     if (!user) return
     const { data, error } = await supabase
       .from('profiles')
-      .upsert({ id: user.id, role, onboarded: true }, { onConflict: 'id' })
+      .upsert(
+        {
+          id: user.id,
+          role,
+          onboarded: true,
+          ...(role === 'recruiter' ? { status: 'pending' } : {}),
+        },
+        { onConflict: 'id' },
+      )
       .select()
       .maybeSingle()
     if (error) throw error
@@ -144,6 +152,7 @@ export function AuthProvider({ children }) {
 
   const isProfileComplete = useCallback((p) => {
     if (!p) return false
+    if (p.role === 'admin') return true
     if (!p.role) return false
     if (!p.name || !p.name.trim()) return false
     if (!p.phone || !p.phone.trim()) return false
@@ -155,7 +164,9 @@ export function AuthProvider({ children }) {
   // Where an incomplete profile should be sent: role-select until a role is
   // chosen once (onboarded), then straight to that role's profile page.
   const onboardingPath = useCallback((p) => {
-    if (!p || !p.onboarded) return '/role-select'
+    if (!p) return '/role-select'
+    if (p.role === 'admin') return '/admin/dashboard'
+    if (!p.onboarded) return '/role-select'
     return p.role === 'recruiter' ? '/recruiter/profile' : '/student/profile'
   }, [])
 

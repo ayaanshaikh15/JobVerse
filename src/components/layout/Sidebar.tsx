@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import {
   LayoutDashboard, Briefcase, FileText, Send, User,
   Users, PlusCircle, List, LogOut, ChevronRight, AlertTriangle, X,
+  GraduationCap, Building2,
 } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 import { getInitials } from '../../lib/utils'
@@ -23,13 +24,25 @@ const recruiterLinks = [
   { to: '/recruiter/applicants', icon: Users, label: 'Applicants' }
 ]
 
+const adminLinks = [
+  { to: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/admin/students', icon: GraduationCap, label: 'Students' },
+  { to: '/admin/recruiters', icon: Building2, label: 'Recruiters' },
+  { to: '/admin/jobs', icon: Briefcase, label: 'Jobs' },
+  { to: '/admin/applications', icon: Send, label: 'Applications' }
+]
+
 export default function Sidebar() {
   const { profile, logout } = useAuth()
   const navigate = useNavigate()
   const [showLogoutModal, setShowLogoutModal] = useState(false)
-  const links = profile?.role === 'recruiter' ? recruiterLinks : studentLinks
+  const links = profile?.role === 'recruiter' ? recruiterLinks
+    : profile?.role === 'admin' ? adminLinks
+    : studentLinks
 
-  const profilePath = profile?.role === 'recruiter' ? '/recruiter/profile' : '/student/profile'
+  const profilePath = profile?.role === 'recruiter' ? '/recruiter/profile'
+    : profile?.role === 'admin' ? '/admin/profile'
+    : '/student/profile'
 
   const handleLogoutConfirm = async () => {
     setShowLogoutModal(false)

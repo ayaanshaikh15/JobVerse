@@ -76,7 +76,7 @@ export default function TopNav() {
           </div>
 
           <Link
-            to={profile?.role === 'recruiter' ? '/recruiter/profile' : '/student/profile'}
+            to={profile?.role === 'recruiter' ? '/recruiter/profile' : profile?.role === 'admin' ? '/admin/profile' : '/student/profile'}
             className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-cyan-500 flex items-center justify-center text-white text-xs font-semibold shadow-sm hover:shadow-md transition-all"
           >
             {profile ? getInitials(profile.name) : 'U'}

@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, Briefcase, FileText, Send, User, Users, PlusCircle, List } from 'lucide-react'
+import { LayoutDashboard, Briefcase, FileText, Send, User, Users, PlusCircle, List, GraduationCap, Building2 } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 
 const studentLinks = [
@@ -18,9 +18,19 @@ const recruiterLinks = [
   { to: '/recruiter/profile', icon: User, label: 'Profile' },
 ]
 
+const adminLinks = [
+  { to: '/admin/dashboard', icon: LayoutDashboard, label: 'Home' },
+  { to: '/admin/students', icon: GraduationCap, label: 'Students' },
+  { to: '/admin/recruiters', icon: Building2, label: 'Recruiters' },
+  { to: '/admin/jobs', icon: Briefcase, label: 'Jobs' },
+  { to: '/admin/profile', icon: User, label: 'Profile' },
+]
+
 export default function MobileNav() {
   const { profile } = useAuth()
-  const links = profile?.role === 'recruiter' ? recruiterLinks : studentLinks
+  const links = profile?.role === 'recruiter' ? recruiterLinks
+    : profile?.role === 'admin' ? adminLinks
+    : studentLinks
 
   return (
     <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-[#E2E8F0] px-2 pb-safe">

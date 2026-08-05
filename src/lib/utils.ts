@@ -18,6 +18,12 @@ export function getInitials(name) {
     .slice(0, 2)
 }
 
+export function getRoleHomePath(role) {
+  if (role === 'admin') return '/admin/dashboard'
+  if (role === 'recruiter') return '/recruiter/dashboard'
+  return '/student/dashboard'
+}
+
 export const statusColors = {
   applied: 'bg-blue-50 text-blue-700 border-blue-200',
   reviewing: 'bg-amber-50 text-amber-700 border-amber-200',
@@ -41,4 +47,16 @@ export const typeColors = {
   'internship': 'bg-cyan-50 text-cyan-700',
   'part-time': 'bg-purple-50 text-purple-700',
   'contract': 'bg-orange-50 text-orange-700',
+}
+
+export const recruiterStatusColors = {
+  pending: 'bg-amber-50 text-amber-700 border-amber-200',
+  approved: 'bg-green-50 text-green-700 border-green-200',
+  rejected: 'bg-red-50 text-red-700 border-red-200',
+}
+
+export const recruiterStatusLabels = {
+  pending: 'Pending',
+  approved: 'Approved',
+  rejected: 'Rejected',
 }

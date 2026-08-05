@@ -22,6 +22,15 @@ import MyJobs from './pages/recruiter/MyJobs'
 import Applicants from './pages/recruiter/Applicants'
 import RecruiterProfile from './pages/recruiter/Profile'
 
+import AdminDashboard from './pages/admin/Dashboard'
+import AdminStudents from './pages/admin/Students'
+import AdminRecruiters from './pages/admin/Recruiters'
+import AdminJobs from './pages/admin/Jobs'
+import AdminApplications from './pages/admin/Applications'
+import AdminProfile from './pages/admin/Profile'
+
+import { getRoleHomePath } from './lib/utils'
+
 function ProtectedRoute({ children, role, allowIncomplete }) {
   const { user, profile, loading, isProfileComplete, onboardingPath } = useAuth()
   if (loading) return (
@@ -34,7 +43,7 @@ function ProtectedRoute({ children, role, allowIncomplete }) {
     return <Navigate to={onboardingPath(profile)} replace />
   }
   if (role && profile?.role && profile.role !== role) {
-    return <Navigate to={profile.role === 'recruiter' ? '/recruiter/dashboard' : '/student/dashboard'} replace />
+    return <Navigate to={getRoleHomePath(profile.role)} replace />
   }
   return children
 }
@@ -50,7 +59,7 @@ function AppRoutes() {
   }
   const homeDestination = !isProfileComplete(profile)
     ? onboardingPath(profile)
-    : profile?.role === 'recruiter' ? '/recruiter/dashboard' : '/student/dashboard'
+    : getRoleHomePath(profile?.role)
   return (
     <Routes>
       <Route path="/" element={user ? <Navigate to={homeDestination} replace /> : <Landing />} />
@@ -72,6 +81,13 @@ function AppRoutes() {
       <Route path="/recruiter/jobs" element={<ProtectedRoute role="recruiter"><MyJobs /></ProtectedRoute>} />
       <Route path="/recruiter/applicants" element={<ProtectedRoute role="recruiter"><Applicants /></ProtectedRoute>} />
       <Route path="/recruiter/profile" element={<ProtectedRoute role="recruiter" allowIncomplete><RecruiterProfile /></ProtectedRoute>} />
+
+      <Route path="/admin/dashboard" element={<ProtectedRoute role="admin"><AdminDashboard /></ProtectedRoute>} />
+      <Route path="/admin/students" element={<ProtectedRoute role="admin"><AdminStudents /></ProtectedRoute>} />
+      <Route path="/admin/recruiters" element={<ProtectedRoute role="admin"><AdminRecruiters /></ProtectedRoute>} />
+      <Route path="/admin/jobs" element={<ProtectedRoute role="admin"><AdminJobs /></ProtectedRoute>} />
+      <Route path="/admin/applications" element={<ProtectedRoute role="admin"><AdminApplications /></ProtectedRoute>} />
+      <Route path="/admin/profile" element={<ProtectedRoute role="admin"><AdminProfile /></ProtectedRoute>} />
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

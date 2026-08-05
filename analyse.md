@@ -11,7 +11,7 @@ Comprehensive documentation of the JobVerse project. This file is the single sou
 **Key characteristics:**
 - **UI/UX first:** A high-fidelity, fully functional front end with polished, animated, responsive UI.
 - **Backend is real:** Authentication, profiles, jobs, applications, and resumes are all persisted in **Supabase** (`supabase/schema.sql`). Demo jobs are seeded into the DB on first run; `mockData` is used only as the seed source.
-- **Two roles:** Student and Recruiter, with separate dashboards.
+- **Three roles:** Student, Recruiter, and Admin (admin has a separate management panel; provisioned manually in the DB).
 - **Theme:** Light/dark mode toggle with system-preference detection.
 
 ---
@@ -67,6 +67,7 @@ JobVerse/
 │   │   │   ├── Sidebar.tsx          # Desktop sidebar (role-based links, logout modal)
 │   │   │   ├── TopNav.tsx           # Greeting, search, theme toggle, notifications, avatar
 │   │   │   └── MobileNav.tsx        # Bottom tab navigation (mobile)
+│   │   ├── ConfirmModal.tsx         # Reusable delete/confirm dialog (admin pages)
 │   │   └── SignOutModal.tsx         # Reusable sign-out confirmation modal
 │   ├── hooks/
 │   │   ├── useAuth.tsx          # Auth context: Supabase login/register/role/logout/profile
@@ -76,16 +77,18 @@ JobVerse/
 │   │   └── useTheme.tsx         # Dark/light theme context
 │   ├── lib/
 │   │   ├── api.ts               # All Supabase DB + Storage calls, demo-job seeding
+│   │   ├── adminApi.ts          # Admin panel: stats, students, recruiters, jobs, applications
 │   │   ├── mockData.ts          # Seed source for jobs (mockJobs)
 │   │   ├── companies.ts         # COMPANY_REGISTRY for recruiter verification
 │   │   ├── supabase.ts          # Supabase client (URL + publishable key via env)
 │   │   ├── types.ts             # (placeholder — types removed, JS-style code)
-│   │   └── utils.ts             # formatDate, getInitials, status/type color+label maps
+│   │   └── utils.ts             # formatDate, getInitials, status/type color+label maps, getRoleHomePath
 │   ├── pages/
 │   │   ├── Landing.tsx
 │   │   ├── auth/Login.tsx, Register.tsx, RoleSelect.tsx, CompleteProfile.tsx
 │   │   ├── student/Dashboard, Jobs, JobDetail, Resume, AIResumeBuilder, Applications, Profile
-│   │   └── recruiter/Dashboard, PostJob, MyJobs, Applicants, Profile
+│   │   ├── recruiter/Dashboard, PostJob, MyJobs, Applicants, Profile
+│   │   └── admin/Dashboard, Students, Recruiters, Jobs, Applications
 │   └── imports/pasted_text/  # Original design specs (job-portal-spec.md, job-placement-portal.md)
 ├── supabase/
 │   └── schema.sql               # profiles/jobs/applications/resumes + RLS + triggers + storage
@@ -115,6 +118,11 @@ JobVerse/
 | `/recruiter/jobs` | `MyJobs` | Recruiter |
 | `/recruiter/applicants` | `Applicants` | Recruiter |
 | `/recruiter/profile` | `RecruiterProfile` | Recruiter |
+| `/admin/dashboard` | `AdminDashboard` | Admin |
+| `/admin/students` | `AdminStudents` | Admin |
+| `/admin/recruiters` | `AdminRecruiters` | Admin |
+| `/admin/jobs` | `AdminJobs` | Admin |
+| `/admin/applications` | `AdminApplications` | Admin |
 | `*` | Redirect to `/` | — |
 
 **Route protection:** `ProtectedRoute` checks auth via `useAuth()`; if unauthenticated → `/login`; if the profile is **incomplete** → its `onboardingPath` (not-yet-onboarded → `/role-select`; onboarded but unfinished → that role's profile page) unless `allowIncomplete`; if role mismatch → that role's dashboard. Loading spinner shown while auth **and profile** initialize (routes never render before the profile is loaded, so completed users are never misrouted to `/role-select`).
@@ -156,7 +164,7 @@ JobVerse/
 - **Landing page** — responsive fixed navbar (desktop links + mobile hamburger menu with animated dropdown), hero with gradient headline, floating job/stats/AI-badge cards; stats grid; 6 feature cards; trusted-companies strip; gradient CTA; footer.
 - **Login** — email/password with show/hide, links to register; redirects to the `onboardingPath` if the profile is incomplete, else to the role dashboard; shows real Supabase error messages.
 - **Register** — name/email/password (min 6 chars); success → `/role-select` (or `/login` with "check your email" if email confirmation is enabled).
-- **RoleSelect** (`/role-select`) — onboarding step 1, shown **only until a role is chosen once**: completed or already-onboarded users are redirected straight to their dashboard/profile. Choose **Student** or **Recruiter**; recruiters must verify a company via `COMPANY_REGISTRY` codes (`src/lib/companies.ts`, e.g. `STRIPE-2024-XK9`, `DEMO-COMPANY-01`); verify button simulates a 900ms check. Continue saves the role (`setRole`, marks `onboarded: true`) plus the verified company for recruiters, then goes to that role's profile page.
+- **RoleSelect** (`/role-select`) — onboarding step 1, shown **only until a role is chosen once**: completed or already-onboarded users are redirected straight to their dashboard/profile. Choose **Student** or **Recruiter** (no company-ID verification). Continue saves the role (`setRole`, marks `onboarded: true`; recruiters are set to **pending** approval) then goes to that role's profile page.
 - **CompleteProfile** (`/complete-profile`) — onboarding step 2: shows the selected role, collects **name, phone, and college** (recruiters see their verified company read-only). Save → `updateProfile` → role dashboard.
 
 ### 6.2 Student
@@ -169,11 +177,19 @@ JobVerse/
 - **Profile** — avatar (initials), verified badge, edit profile (name/phone/college) saved to DB, contact info, live resume status card with download, sign out (via reusable `SignOutModal`).
 
 ### 6.3 Recruiter
-- **Dashboard** — live stat cards (Jobs Posted, Total Applicants, Interviews, Accepted); quick actions (Post a Job, Manage Jobs, View Applicants); active job listings with real applicant counts; recent applicants with status badges.
-- **Post Job** — form: title, company, location, salary/stipend, job type (full-time/internship/part-time/contract), category (Engineering, Design, Data Science, DevOps, Product, Marketing), description, plus tag inputs for skills, requirements, and benefits; validates required fields; on submit inserts a real `jobs` row owned by the recruiter and navigates to `/recruiter/jobs`.
+- **Dashboard** — live stat cards (Jobs Posted, Total Applicants, Interviews, Accepted); quick actions (Post a Job, Manage Jobs, View Applicants); active job listings with real applicant counts; recent applicants with status badges. Pending/rejected accounts show an approval-status banner.
+- **Post Job** — form: title, company, location, salary/stipend, job type (full-time/internship/part-time/contract), category (Engineering, Design, Data Science, DevOps, Product, Marketing), description, plus tag inputs for skills, requirements, and benefits; validates required fields; on submit inserts a real `jobs` row owned by the recruiter and navigates to `/recruiter/jobs`. **Blocked until the recruiter is `approved`** (pending → awaiting-approval screen; rejected → rejected screen).
 - **My Jobs** — the recruiter's jobs from the DB (skeleton loading); per-row View Applicants, Edit, Delete; empty state with CTA to post a job.
 - **Applicants** — the recruiter's applications from the DB (with student profile + job); search by name/college, status filter dropdown; desktop table (candidate, college, applied, status, resume view/download, Accept/Reject actions); mobile card layout; Accept/Reject persist the status to the DB; "Decided" state once accepted/rejected.
-- **Profile** — avatar (initials), recruiter badge, edit name/phone (saved to DB), contact info (email/phone/company), sign out.
+- **Profile** — avatar (initials), recruiter badge, edit name/**company**/phone/website (saved to DB), contact info (email/phone/company/website), sign out. New recruiters are **pending** until an admin approves them.
+
+### 6.4 Admin
+- **Dashboard** — four live stat cards (Total Students, Total Recruiters, Total Jobs, Total Applications) plus quick-navigation cards to each management section.
+- **Students** — all student profiles (name, email, college, joined); search by name; delete with confirmation (cascades to the auth user and their applications).
+- **Recruiters** — all recruiter profiles (company, recruiter name, email, website, status badge, joined); search by company name; Approve/Reject actions that update `profiles.status` (pending → approved/rejected, approved → rejected, rejected → approved).
+- **Jobs** — all job listings (title, company, location, posted date); delete any job with confirmation (cascades to its applications).
+- **Applications** — all applications (student name + email, job title, company, applied date, status badge).
+- **Access** — `admin` role only; non-admins are redirected to their own dashboard; unauthenticated users go to `/login`. Admins skip profile-completion onboarding.
 
 ---
 
@@ -245,8 +261,7 @@ Implemented:
 Not yet implemented / stubbed:
 - **Email verification** — handled client-side (redirect to login with hint); toggle "Confirm email" in Supabase Auth settings to suit your flow.
 - **Password reset** — "Forgot password?" link is still a no-op.
-- **AI integration** — resume generation is a simulated 3s delay; no Gemini/OpenAI call.
-- **PDF download** (`html2pdf.js`) — AI resume exports plain text; true PDF export not wired.
+- **Uploaded-resume PDF preview/download** — uploaded PDFs are stored in Supabase Storage and opened in a new tab / browser viewer rather than rendered inline.
 - **Search (⌘K)** — decorative button only.
 - **Notifications** — hardcoded sample items.
 - **Salary filter** in job list; **Edit job** button (no-op); **camera/avatar upload** (decorative); **forgot password** link (no-op).
@@ -261,6 +276,10 @@ Not yet implemented / stubbed:
 
 | Date | Feature | Description |
 |---|---|---|
+| 2026-08-05 | PDF resume export | Added `src/lib/resumePdf.ts` using `jspdf` to render the resume as a properly structured A4 PDF: centered name header + contact/links, accent-colored section titles with rules (Summary, Education, Skills, Projects, Experience, Certifications & Awards), hanging-indent bullets, word wrapping, auto page-breaks, and footer page numbers. `Download Resume` in the AI Resume Builder now exports this PDF, and the My Resume page exports saved AI-generated resumes as PDF too (older saved payloads still fall back to raw JSON download). Added `jspdf` dependency. |
+| 2026-08-05 | Gemini-powered AI Resume Builder | Replaced the simulated 3s resume generation with a real call to the Gemini REST API. New `src/lib/gemini.ts` (`generateResume`, `isGeminiConfigured`) posts the candidate's details and gets back a rewritten ATS-optimized resume + ATS score + improvement feedback (strict JSON via `responseMimeType: "application/json"`, robust JSON extraction). Key/model come from `VITE_GEMINI_API_KEY` / `VITE_GEMINI_MODEL` (default `gemini-2.0-flash`). Without a key the builder falls back to a local demo result with a warning toast. Preview now renders the AI output (summary, feedback, skills chips, quantified bullets); Save persists the AI resume (shape compatible with the applicants resume viewer); Download exports a formatted PDF. **Note:** a `VITE_` key is bundled client-side — fine for demos, restrict it in Google AI Studio or proxy it server-side for production. |
+| 2026-08-05 | Recruiter onboarding without company verification | Removed the company-ID verification step from `RoleSelect`. Recruiters now just pick the Recruiter role and finish their profile (company name + phone + website) on the profile page. Recruiters are created as **pending** and cannot post jobs until an admin approves them (already enforced by RLS `jobs_insert` + PostJob gate). |
+| 2026-08-05 | Admin panel | Added `/admin/*` routes (`Dashboard`, `Students`, `Recruiters`, `Jobs`, `Applications`, `Profile`) gated to the `admin` role via `ProtectedRoute`. Admin provisioning: insert a `profiles` row with `role='admin'` (instructions in `supabase/migrations/20260805_admin_panel.sql`). Dashboard shows Total Students / Recruiters / Jobs / Applications. Students list + name search + delete (confirm modal, cascades to auth user + applications). Recruiters list (company, recruiter name, email, website, status) with search by company + Approve/Reject. Jobs list + delete. Applications list (student, job, company, status). Admin Profile page shows name/email/role/member-since + sign out. Added `profiles.status` (`pending`/`approved`/`rejected`, default `pending`) + `profiles.website`, extended role check to include `admin`, added `is_admin()` (security definer) and admin RLS policies on profiles/jobs/applications. **Only Approved recruiters can post jobs** (enforced in RLS `jobs_insert` + PostJob page gate + dashboard banner). New recruiters start `pending` (set in `useAuth.setRole`). Admins skip profile-completion onboarding. |
 | 2026-08-03 | One-time role selection (one role per email) | Role is now chosen once and locked per account. Added `onboarded` flag to `profiles` (`supabase/schema.sql` + idempotent migration); `setRole` persists `onboarded: true`. Fixed the auth loading race in `useAuth.tsx` so `loading` stays true until the profile is fetched — previously `onAuthStateChange` cleared it early and the root route redirected completed users to `/role-select` on every visit. `RoleSelect` now redirects completed/onboarded users straight to their dashboard or profile page, and `App.tsx`/`Login.tsx` route incomplete-but-onboarded profiles to their role profile page instead of re-asking for a role. |
 | 2026-08-03 | Two-step onboarding (role select → profile) | Split onboarding into two steps per request: `/role-select` (pick Student/Recruiter, recruiters verify company via `COMPANY_REGISTRY`) then `/complete-profile` (name/phone/college, company read-only for recruiters) → dashboard. Login/Register and `ProtectedRoute` now route incomplete profiles to `/role-select`; recreated `RoleSelect.tsx`; `CompleteProfile.tsx` now only collects profile fields. |
 | 2026-08-03 | Responsive navbar | Landing page navbar now has a mobile hamburger menu (animated dropdown with Features/Companies/Browse Jobs + Sign in/Get started); desktop links and CTA buttons hidden on small screens. |

@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { toast } from 'sonner'
 import { Briefcase, Eye, EyeOff, ArrowRight } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
+import { getRoleHomePath } from '../../lib/utils'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -23,7 +24,7 @@ export default function Login() {
       const role = loggedInProfile?.role
       const destination = !isProfileComplete(loggedInProfile)
         ? onboardingPath(loggedInProfile)
-        : role === 'recruiter' ? '/recruiter/dashboard' : '/student/dashboard'
+        : getRoleHomePath(role)
       setTimeout(() => navigate(destination), 300)
     } catch (err) {
       toast.error(err?.message || 'Invalid credentials. Try again.')

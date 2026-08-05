@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { toast } from 'sonner'
-import { Plus, X, Briefcase } from 'lucide-react'
+import { Plus, X, Briefcase, Clock, XCircle } from 'lucide-react'
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import { useRecruiterJobs } from '../../hooks/useJobs'
 import { useAuth } from '../../hooks/useAuth'
@@ -38,7 +38,7 @@ function TagInput({ tags, onAdd, onRemove, placeholder }) {
 export default function PostJob() {
   const navigate = useNavigate()
   const { id } = useParams()
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const { addJob, updateJob } = useRecruiterJobs(user?.id)
   const [loading, setLoading] = useState(false)
   const [jobLoading, setJobLoading] = useState(!!id)
@@ -111,6 +111,27 @@ export default function PostJob() {
     } finally {
       setLoading(false)
     }
+  }
+
+  if (profile && profile.status !== 'approved') {
+    const rejected = profile.status === 'rejected'
+    return (
+      <DashboardLayout>
+        <div className="max-w-md mx-auto text-center py-20">
+          <div className={`w-20 h-20 rounded-3xl border flex items-center justify-center mx-auto mb-4 ${rejected ? 'bg-red-50 border-red-100' : 'bg-amber-50 border-amber-100'}`}>
+            {rejected ? <XCircle size={30} className="text-red-500" /> : <Clock size={30} className="text-amber-500" />}
+          </div>
+          <h1 className="text-xl font-bold text-[#111827] mb-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
+            {rejected ? 'Company registration rejected' : 'Account pending approval'}
+          </h1>
+          <p className="text-sm text-[#6B7280] leading-relaxed">
+            {rejected
+              ? 'Your company registration was rejected by the admin. Contact support if you believe this is a mistake.'
+              : 'Your company is awaiting admin approval. You will be able to post jobs as soon as an admin approves your recruiter account.'}
+          </p>
+        </div>
+      </DashboardLayout>
+    )
   }
 
   if (jobLoading) {

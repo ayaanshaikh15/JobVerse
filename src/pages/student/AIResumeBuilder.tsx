@@ -6,6 +6,8 @@ import { ChevronLeft, ChevronRight, CheckCircle2, Sparkles, Download, Plus, X } 
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import { useResume } from '../../hooks/useResume'
 import { useAuth } from '../../hooks/useAuth'
+import { generateResume, isGeminiConfigured } from '../../lib/gemini'
+import { downloadResumePdf } from '../../lib/resumePdf'
 
 const steps = [
   { id: 1, label: 'Personal Info', desc: 'Basic details' },
@@ -58,6 +60,7 @@ export default function AIResumeBuilder() {
   const [data, setData] = useState(defaultData)
   const [generating, setGenerating] = useState(false)
   const [generated, setGenerated] = useState(false)
+  const [aiResult, setAiResult] = useState(null)
   const navigate = useNavigate()
   const { user } = useAuth()
   const { saveGenerated } = useResume(user?.id)
@@ -81,72 +84,72 @@ export default function AIResumeBuilder() {
     return { ...d, experience: e }
   })
 
-  const handleGenerate = () => {
-    setGenerating(true)
-    setTimeout(() => {
-      setGenerating(false)
-      setGenerated(true)
-      toast.success('AI Resume generated! ATS Score: 97% 🎉')
-    }, 3000)
-  }
-
-  const buildResumeText = (d) => {
-    const lines = []
-    lines.push(d.personal?.name || 'Aarav Mehta')
-    lines.push([d.personal?.email, d.personal?.phone].filter(Boolean).join(' · '))
-    lines.push('')
-    lines.push('EDUCATION')
-    lines.push(`${d.education?.college || 'IIT Delhi'} — ${d.education?.degree || 'B.Tech'} in ${d.education?.branch || 'Computer Science'} · CGPA ${d.education?.cgpa || '8.7'} · ${d.education?.year || '2025'}`)
-    lines.push('')
-    const tech = [
+  // Local fallback used only when no Gemini API key is configured, so the
+  // builder still works as a demo instead of erroring out.
+  const fallbackResume = (d) => ({
+    name: d.personal?.name || 'Aarav Mehta',
+    email: d.personal?.email || '',
+    phone: d.personal?.phone || '',
+    linkedin: d.personal?.linkedin || '',
+    github: d.personal?.github || '',
+    summary: `Enthusiastic ${d.education?.branch || 'Computer Science'} student from ${d.education?.college || 'IIT Delhi'} with hands-on experience building real-world projects. Seeking an internship or full-time role to apply strong ${[
+      ...(d.skills?.technical || []),
+      ...(d.skills?.frameworks || []),
+      ...(d.skills?.languages || []),
+    ].join(', ') || 'technical'} skills in a fast-paced environment.`,
+    education: [{
+      school: d.education?.college || 'IIT Delhi',
+      degree: `${d.education?.degree || 'B.Tech'} in ${d.education?.branch || 'Computer Science'}`,
+      details: `CGPA ${d.education?.cgpa || '8.7'} · ${d.education?.year || '2025'}`,
+    }],
+    skills: [
       ...(d.skills?.technical || []),
       ...(d.skills?.frameworks || []),
       ...(d.skills?.databases || []),
       ...(d.skills?.languages || []),
-    ]
-    if (tech.length) {
-      lines.push('SKILLS')
-      lines.push(tech.join(', '))
-      lines.push('')
+      ...(d.skills?.soft || []),
+    ],
+    projects: (d.projects || []).filter(p => p.name).map(p => ({ name: p.name, description: p.description || '' })),
+    experience: (d.experience || []).filter(e => e.company).map(e => ({
+      title: e.role || 'Role',
+      company: e.company,
+      duration: e.duration || '',
+      description: e.description || '',
+    })),
+    achievements: [...(d.achievements?.certificates || []), ...(d.achievements?.awards || [])],
+  })
+
+  const handleGenerate = async () => {
+    setGenerating(true)
+    try {
+      if (!isGeminiConfigured()) {
+        await new Promise(r => setTimeout(r, 2000))
+        setAiResult({ resume: fallbackResume(data), atsScore: 97, feedback: [] })
+        setGenerated(true)
+        toast.warning('Gemini API key not set — showing a demo result. Add VITE_GEMINI_API_KEY to .env for real AI generation.')
+        return
+      }
+      const result = await generateResume(data)
+      setAiResult(result)
+      setGenerated(true)
+      toast.success(`AI Resume generated! ATS Score: ${result.atsScore}% 🎉`)
+    } catch (err) {
+      toast.error(err?.message || 'AI generation failed. Please try again.')
+    } finally {
+      setGenerating(false)
     }
-    const projects = (d.projects || []).filter(p => p.name)
-    if (projects.length) {
-      lines.push('PROJECTS')
-      projects.forEach(p => lines.push(`• ${p.name}${p.description ? `: ${p.description}` : ''}`))
-      lines.push('')
-    }
-    const exp = (d.experience || []).filter(e => e.company)
-    if (exp.length) {
-      lines.push('EXPERIENCE')
-      exp.forEach(e => {
-        lines.push(`• ${e.role || 'Role'} at ${e.company}${e.duration ? ` (${e.duration})` : ''}`)
-        if (e.description) lines.push(`  ${e.description}`)
-      })
-      lines.push('')
-    }
-    const certs = [...(d.achievements?.certificates || []), ...(d.achievements?.awards || [])]
-    if (certs.length) {
-      lines.push('CERTIFICATIONS & AWARDS')
-      lines.push(certs.join(', '))
-    }
-    return lines.join('\n')
   }
 
   const downloadResume = () => {
-    const text = buildResumeText(data)
-    const blob = new Blob([text], { type: 'text/plain' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `${(data.personal?.name || 'resume').replace(/\s+/g, '-').toLowerCase()}.txt`
-    a.click()
-    URL.revokeObjectURL(url)
-    toast.success('Resume downloaded!')
+    const resume = aiResult?.resume ?? fallbackResume(data)
+    downloadResumePdf(resume)
+    toast.success('Resume downloaded as PDF!')
   }
 
   const handleSaveResume = async () => {
     try {
-      await saveGenerated(data)
+      const payload = aiResult?.resume ?? data
+      await saveGenerated(payload)
       toast.success('Resume saved to your account!')
       navigate('/student/resume')
     } catch (err) {
@@ -358,44 +361,102 @@ export default function AIResumeBuilder() {
                   </div>
                 )}
 
-                {generated && (
+                {generated && aiResult && (
                   <div>
                     <div className="flex items-center gap-3 mb-5 p-4 bg-green-50 rounded-xl border border-green-100">
                       <CheckCircle2 className="text-green-500 shrink-0" size={20} />
                       <div>
                         <p className="font-semibold text-green-800 text-sm">Resume generated successfully!</p>
-                        <p className="text-xs text-green-600">ATS Score: 97% · Ready to apply</p>
+                        <p className="text-xs text-green-600">ATS Score: {aiResult.atsScore}% · Ready to apply</p>
                       </div>
                     </div>
-                    <div className="border border-[#E2E8F0] rounded-2xl p-6 bg-white font-mono text-xs text-[#374151] mb-4">
+
+                    {aiResult.feedback?.length > 0 && (
+                      <div className="mb-4 p-4 bg-indigo-50 rounded-xl border border-indigo-100">
+                        <p className="text-xs font-semibold text-indigo-700 mb-2">AI Improvement Suggestions</p>
+                        <ul className="space-y-1.5">
+                          {aiResult.feedback.map((f, i) => (
+                            <li key={i} className="flex items-start gap-1.5 text-xs text-indigo-700">
+                              <CheckCircle2 size={12} className="mt-0.5 shrink-0" /> {f}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    <div className="border border-[#E2E8F0] rounded-2xl p-6 bg-white mb-4">
                       <div className="border-b border-[#E2E8F0] pb-3 mb-3">
-                        <h2 className="text-lg font-bold text-[#111827]" style={{ fontFamily: 'inherit' }}>{data.personal.name || 'Aarav Mehta'}</h2>
-                        <p className="text-[#6B7280]">{data.personal.email || 'aarav@example.com'} · {data.personal.phone || '+91 98765 43210'}</p>
+                        <h2 className="text-lg font-bold text-[#111827]" style={{ fontFamily: 'inherit' }}>{aiResult.resume.name || 'Aarav Mehta'}</h2>
+                        <p className="text-sm text-[#6B7280]">{[aiResult.resume.email, aiResult.resume.phone].filter(Boolean).join(' · ')}</p>
                         <div className="flex gap-3 mt-1 text-indigo-600 text-[11px]">
-                          {data.personal.linkedin && <span>{data.personal.linkedin}</span>}
-                          {data.personal.github && <span>{data.personal.github}</span>}
+                          {aiResult.resume.linkedin && <span>{aiResult.resume.linkedin}</span>}
+                          {aiResult.resume.github && <span>{aiResult.resume.github}</span>}
                         </div>
                       </div>
-                      <div className="mb-3">
-                        <h3 className="text-[11px] font-bold uppercase tracking-wide text-[#9CA3AF] mb-1">Education</h3>
-                        <p className="font-semibold text-[#111827]">{data.education.college || 'IIT Delhi'}</p>
-                        <p>{data.education.degree || 'B.Tech'} in {data.education.branch || 'Computer Science'} · CGPA: {data.education.cgpa || '8.7'} · {data.education.year || '2025'}</p>
-                      </div>
-                      {data.skills.technical.length > 0 && (
+
+                      {aiResult.resume.summary && (
                         <div className="mb-3">
-                          <h3 className="text-[11px] font-bold uppercase tracking-wide text-[#9CA3AF] mb-1">Skills</h3>
-                          <p>{data.skills.technical.join(', ')}</p>
+                          <h3 className="text-[11px] font-bold uppercase tracking-wide text-[#9CA3AF] mb-1">Summary</h3>
+                          <p className="text-sm text-[#374151] leading-relaxed">{aiResult.resume.summary}</p>
                         </div>
                       )}
-                      {data.projects.filter(p => p.name).length > 0 && (
+
+                      {aiResult.resume.education?.length > 0 && (
                         <div className="mb-3">
-                          <h3 className="text-[11px] font-bold uppercase tracking-wide text-[#9CA3AF] mb-1">Projects</h3>
-                          {data.projects.filter(p => p.name).map((p, i) => (
-                            <div key={i} className="mb-1.5">
-                              <p className="font-semibold text-[#111827]">{p.name}</p>
-                              <p className="text-[#6B7280]">{p.description}</p>
+                          <h3 className="text-[11px] font-bold uppercase tracking-wide text-[#9CA3AF] mb-1">Education</h3>
+                          {aiResult.resume.education.map((edu, i) => (
+                            <div key={i}>
+                              <p className="text-sm font-semibold text-[#111827]">{edu.school}</p>
+                              <p className="text-sm text-[#6B7280]">{edu.degree}{edu.details ? ` · ${edu.details}` : ''}</p>
                             </div>
                           ))}
+                        </div>
+                      )}
+
+                      {aiResult.resume.skills?.length > 0 && (
+                        <div className="mb-3">
+                          <h3 className="text-[11px] font-bold uppercase tracking-wide text-[#9CA3AF] mb-1">Skills</h3>
+                          <div className="flex flex-wrap gap-1.5">
+                            {aiResult.resume.skills.map((skill, i) => (
+                              <span key={i} className="text-xs bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full">{skill}</span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {aiResult.resume.projects?.length > 0 && (
+                        <div className="mb-3">
+                          <h3 className="text-[11px] font-bold uppercase tracking-wide text-[#9CA3AF] mb-1">Projects</h3>
+                          {aiResult.resume.projects.map((p, i) => (
+                            <div key={i} className="mb-1.5">
+                              <p className="text-sm font-semibold text-[#111827]">{p.name}</p>
+                              {p.description && <p className="text-sm text-[#6B7280]">{p.description}</p>}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {aiResult.resume.experience?.length > 0 && (
+                        <div className="mb-3">
+                          <h3 className="text-[11px] font-bold uppercase tracking-wide text-[#9CA3AF] mb-1">Experience</h3>
+                          {aiResult.resume.experience.map((exp, i) => (
+                            <div key={i} className="mb-2">
+                              <p className="text-sm font-semibold text-[#111827]">{exp.title} at {exp.company}</p>
+                              {exp.duration && <p className="text-xs text-[#9CA3AF]">{exp.duration}</p>}
+                              {exp.description && <p className="text-sm text-[#6B7280] mt-0.5 leading-relaxed">{exp.description}</p>}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {aiResult.resume.achievements?.length > 0 && (
+                        <div>
+                          <h3 className="text-[11px] font-bold uppercase tracking-wide text-[#9CA3AF] mb-1">Certifications & Awards</h3>
+                          <div className="flex flex-wrap gap-1.5">
+                            {aiResult.resume.achievements.map((a, i) => (
+                              <span key={i} className="text-xs bg-green-50 text-green-700 px-2 py-0.5 rounded-full border border-green-100">{a}</span>
+                            ))}
+                          </div>
                         </div>
                       )}
                     </div>
