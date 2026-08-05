@@ -8,6 +8,7 @@ import { useResume } from '../../hooks/useResume'
 import { useAuth } from '../../hooks/useAuth'
 import { generateResume, isGeminiConfigured } from '../../lib/gemini'
 import { downloadResumePdf } from '../../lib/resumePdf'
+import { fetchAiResume } from '../../lib/api'
 
 const steps = [
   { id: 1, label: 'Personal Info', desc: 'Basic details' },
@@ -62,18 +63,27 @@ export default function AIResumeBuilder() {
   const [generated, setGenerated] = useState(false)
   const [aiResult, setAiResult] = useState(null)
   const [locked, setLocked] = useState(false)
+  const [aiResume, setAiResume] = useState(null)
   const [saved, setSaved] = useState(false)
   const navigate = useNavigate()
   const { user } = useAuth()
-  const { resume, loading, saveGenerated } = useResume(user?.id)
+  const { saveGenerated } = useResume(user?.id)
 
-  // The builder is one-time per account: if an AI-generated resume already
-  // exists, lock the builder and point the user to download their copy.
+  // The builder is one-time per account: if the user has EVER created an
+  // AI-generated resume (not just the latest row), lock the builder.
   useEffect(() => {
-    if (loading || generated) return
-    if (resume?.resume_type === 'ai_generated') setLocked(true)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resume, loading])
+    if (generated) return
+    let active = true
+    fetchAiResume(user?.id)
+      .then(row => {
+        if (active && row) {
+          setLocked(true)
+          setAiResume(row)
+        }
+      })
+      .catch(() => {})
+    return () => { active = false }
+  }, [user?.id, generated])
 
   const updatePersonal = (field, val) => setData(d => ({ ...d, personal: { ...d.personal, [field]: val } }))
   const updateEducation = (field, val) => setData(d => ({ ...d, education: { ...d.education, [field]: val } }))
@@ -178,9 +188,9 @@ export default function AIResumeBuilder() {
   // One-time builder — already created, show download instead of the form.
   if (locked) {
     const downloadLocked = () => {
-      if (!resume?.content) return toast.error('No saved resume content found')
+      if (!aiResume?.content) return toast.error('No saved resume content found')
       try {
-        downloadResumePdf(JSON.parse(resume.content))
+        downloadResumePdf(JSON.parse(aiResume.content))
         toast.success('Resume downloaded as PDF!')
       } catch {
         toast.error('Could not read your saved resume')

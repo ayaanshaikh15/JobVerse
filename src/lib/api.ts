@@ -240,6 +240,23 @@ export async function fetchResume(studentId) {
   return data
 }
 
+/**
+ * Returns the student's AI-generated resume if one exists (any older one,
+ * not just the latest row). Used to enforce the one-AI-resume-per-user rule.
+ */
+export async function fetchAiResume(studentId) {
+  const { data, error } = await supabase
+    .from('resumes')
+    .select('*')
+    .eq('student_id', studentId)
+    .eq('resume_type', 'ai_generated')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+  if (error) throw error
+  return data
+}
+
 export async function uploadResume(studentId, file) {
   const ext = (file.name.split('.').pop() || 'pdf').toLowerCase()
   const path = `${studentId}/${Date.now()}.${ext}`
