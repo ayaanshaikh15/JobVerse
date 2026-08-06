@@ -14,7 +14,9 @@ export async function generateResume(data) {
 
   const prompt = `You are an expert resume writer and ATS (Applicant Tracking System) optimization specialist.
 
-Rewrite the candidate's raw details below into a polished, ATS-friendly resume. Improve section ordering, expand terse bullet points into strong, quantified achievements, and reword skills and project descriptions with strong action verbs and keywords that real ATS systems look for. Keep everything truthful to the provided information — do NOT invent facts, companies, or dates.
+The final resume is rendered as a PDF titled "Resume", centered at the top with a black divider line below it. It begins with a "Personal Information" section displayed as labeled rows (Name, Email, Phone no, LinkedIn, Github), followed by Summary, Education, Skills, Projects, Experience, and Certifications & Awards sections.
+
+Rewrite the candidate's raw details below into a polished, ATS-friendly resume that fits this layout. Improve section ordering, expand terse bullet points into strong, quantified achievements, and reword skills and project descriptions with strong action verbs and keywords that real ATS systems look for. Keep everything truthful to the provided information — do NOT invent facts, companies, or dates.
 
 Candidate details (JSON):
 ${JSON.stringify(data, null, 2)}
@@ -37,7 +39,7 @@ Respond with VALID JSON ONLY, no markdown fences, in EXACTLY this shape:
   "atsScore": 0,
   "feedback": ["short, specific improvement suggestions as strings"]
 }
-The atsScore is an integer from 0 to 100 estimating how well this resume would pass ATS filters.`
+The atsScore is an integer from 0 to 100 estimating how well this resume would pass ATS filters. Make sure name, email, phone, linkedin, and github are always filled from the candidate details (leave a field empty if unknown).`
 
   const response = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${encodeURIComponent(API_KEY)}`,
