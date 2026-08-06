@@ -124,28 +124,38 @@ export default function StudentDashboard() {
           </div>
 
           <div className="divide-y divide-[#F1F5F9] dark:divide-y-0">
-            {recentJobs.map(job => (
-              <Link
-                key={job.id}
-                to={`/student/jobs/${job.id}`}
-                className="flex items-center gap-4 px-5 py-4 hover:bg-[#F8FAFC] transition-colors group"
-              >
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-100 to-cyan-100 flex items-center justify-center shrink-0 text-indigo-600 font-bold text-sm">
-                  {job.company[0]}
+            {recentJobs.length === 0 ? (
+              <div className="px-5 py-10 text-center">
+                <div className="w-12 h-12 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] flex items-center justify-center mx-auto mb-3">
+                  <Briefcase size={20} className="text-[#CBD5E1]" />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-[#111827] truncate">{job.title}</p>
-                  <p className="text-xs text-[#6B7280] truncate">{job.company} · {job.location}</p>
-                </div>
-                <div className="text-right shrink-0">
-                  <p className="text-xs font-semibold text-indigo-600">{job.salary}</p>
-                  <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-medium ${job.type ? typeColors[job.type] : ''}`}>
-                    {job.type === 'internship' ? 'Intern' : 'Full-time'}
-                  </span>
-                </div>
-                <ChevronRight size={14} className="text-[#CBD5E1] group-hover:text-indigo-400 transition-colors shrink-0" />
-              </Link>
-            ))}
+                <p className="text-sm font-semibold text-[#374151]">No jobs available</p>
+                <p className="text-xs text-[#6B7280] mt-1">Check back later for new opportunities</p>
+              </div>
+            ) : (
+              recentJobs.map(job => (
+                <Link
+                  key={job.id}
+                  to={`/student/jobs/${job.id}`}
+                  className="flex items-center gap-4 px-5 py-4 hover:bg-[#F8FAFC] transition-colors group"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-100 to-cyan-100 flex items-center justify-center shrink-0 text-indigo-600 font-bold text-sm">
+                    {job.company[0]}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-[#111827] truncate">{job.title}</p>
+                    <p className="text-xs text-[#6B7280] truncate">{job.company} · {job.location}</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-xs font-semibold text-indigo-600">{job.salary}</p>
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-medium ${job.type ? typeColors[job.type] : ''}`}>
+                      {job.type === 'internship' ? 'Intern' : 'Full-time'}
+                    </span>
+                  </div>
+                  <ChevronRight size={14} className="text-[#CBD5E1] group-hover:text-indigo-400 transition-colors shrink-0" />
+                </Link>
+              ))
+            )}
           </div>
         </motion.div>
 

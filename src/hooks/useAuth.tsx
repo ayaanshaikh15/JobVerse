@@ -17,9 +17,9 @@ async function fetchProfile(userId) {
 }
 
 /**
- * Guarantees a profiles row exists for the given auth user (inserts a minimal
- * row only when missing — never overwrites existing data). Falls back safely
- * when the DB trigger isn't configured yet.
+ * Creates a profiles row during the signup flow only (fallback in case the
+ * DB trigger hasn't created it). Never runs on page load or login, so a
+ * manually deleted profile stays deleted.
  */
 async function ensureProfileRow(authUser) {
   const { error } = await supabase
@@ -49,7 +49,7 @@ export function AuthProvider({ children }) {
     let active = true
 
     const refreshProfile = async (authUser) => {
-      const p = await ensureProfileRow(authUser)
+      const p = await fetchProfile(authUser.id)
       if (active) setProfile(p)
     }
 
@@ -90,7 +90,7 @@ export function AuthProvider({ children }) {
   const login = async (email, password) => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) throw error
-    const p = await ensureProfileRow(data.user)
+    const p = await fetchProfile(data.user.id)
     setUser(data.user)
     setProfile(p)
     return p

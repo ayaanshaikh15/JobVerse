@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
 import {
-  bootstrapJobs,
   fetchJobs,
   fetchJob,
   insertJob,
@@ -18,7 +17,6 @@ export function useJobs() {
   const refresh = useCallback(async () => {
     setLoading(true)
     try {
-      await bootstrapJobs()
       const data = await fetchJobs()
       setJobs(data)
     } catch (err) {

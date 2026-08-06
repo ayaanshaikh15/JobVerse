@@ -1,5 +1,4 @@
 import { supabase } from './supabase'
-import { mockJobs } from './mockData'
 
 const JOB_FIELDS =
   'id, title, company, company_logo, location, salary, salary_min, salary_max, description, skills, requirements, benefits, recruiter_id, type, category, created_at'
@@ -67,39 +66,6 @@ export async function fetchRecruiterJobs(recruiterId) {
     .order('created_at', { ascending: false })
   if (error) throw error
   return data ?? []
-}
-
-/**
- * Seeds the jobs table with the demo mock jobs on first run
- * (only when the table is empty). Seeded jobs have recruiter_id = null.
- */
-export async function bootstrapJobs() {
-  const { count, error } = await supabase
-    .from('jobs')
-    .select('id', { count: 'exact', head: true })
-  if (error) throw error
-  if (count && count > 0) return
-
-  const seed = mockJobs.map((j) => ({
-    title: j.title,
-    company: j.company,
-    company_logo: j.company_logo,
-    location: j.location,
-    salary: j.salary,
-    salary_min: j.salary_min,
-    salary_max: j.salary_max,
-    description: j.description,
-    skills: j.skills,
-    requirements: j.requirements,
-    benefits: j.benefits,
-    type: j.type,
-    category: j.category,
-    created_at: j.created_at,
-    recruiter_id: null,
-  }))
-
-  const { error: insertError } = await supabase.from('jobs').insert(seed)
-  if (insertError) throw insertError
 }
 
 // ------------------------------------------------------------
