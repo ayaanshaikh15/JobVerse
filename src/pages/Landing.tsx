@@ -6,6 +6,7 @@ import {
   ArrowRight, Star, Users, TrendingUp, CheckCircle2, Zap, Sun, Moon, Menu, X,
 } from 'lucide-react'
 import { useTheme } from '../hooks/useTheme'
+import Logo from '../components/Logo'
 
 const companies = ['Stripe', 'Figma', 'Notion', 'Linear', 'Vercel', 'Razorpay', 'CRED', 'Swiggy']
 
@@ -77,12 +78,7 @@ export default function Landing() {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-[#E2E8F0]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-600 to-cyan-500 flex items-center justify-center shadow-sm">
-              <Briefcase size={16} className="text-white" />
-            </div>
-            <span className="font-semibold text-[17px] text-[#111827]" style={{ fontFamily: 'Poppins, sans-serif' }}>
-              Job<span className="text-indigo-600">Verse</span>
-            </span>
+            <Logo size={32} textSize={17} />
           </Link>
 
           <div className="hidden md:flex items-center gap-8 text-sm text-[#6B7280]">
@@ -386,12 +382,7 @@ export default function Landing() {
       <footer className="bg-white border-t border-[#E2E8F0] py-10 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-600 to-cyan-500 flex items-center justify-center">
-              <Briefcase size={13} className="text-white" />
-            </div>
-            <span className="font-semibold text-sm" style={{ fontFamily: 'Poppins, sans-serif' }}>
-              Job<span className="text-indigo-600">Verse</span>
-            </span>
+            <Logo size={28} textSize={14} />
           </div>
           <p className="text-xs text-[#9CA3AF]">
             © {new Date().getFullYear()} JobVerse. Built for the next generation of talent.

@@ -119,7 +119,7 @@ export default function StudentDashboard() {
             </Link>
           </div>
 
-          <div className="divide-y divide-[#F1F5F9]">
+          <div className="divide-y divide-[#F1F5F9] dark:divide-y-0">
             {recentJobs.map(job => (
               <Link
                 key={job.id}
@@ -159,19 +159,32 @@ export default function StudentDashboard() {
             </Link>
           </div>
 
-          <div className="divide-y divide-[#F1F5F9]">
-            {applications.slice(0, 4).map(app => (
-              <div key={app.id} className="px-5 py-4">
-                <div className="flex items-center justify-between mb-1">
-                  <p className="text-sm font-medium text-[#111827] truncate mr-2">{app.job?.title}</p>
-                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border shrink-0 ${statusColors[app.status]}`}>
-                    {statusLabels[app.status]}
-                  </span>
-                </div>
-                <p className="text-xs text-[#6B7280]">{app.job?.company} · {formatDate(app.created_at)}</p>
+          {applications.length === 0 ? (
+            <div className="px-5 py-10 text-center">
+              <div className="w-12 h-12 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] flex items-center justify-center mx-auto mb-3">
+                <Send size={20} className="text-[#CBD5E1]" />
               </div>
-            ))}
-          </div>
+              <p className="text-sm font-semibold text-[#374151]">No applications yet</p>
+              <p className="text-xs text-[#6B7280] mt-1">Start applying to jobs and track your progress here</p>
+              <Link to="/student/jobs" className="inline-flex items-center gap-1 mt-3 text-xs text-indigo-600 font-medium hover:text-indigo-700">
+                Browse Jobs →
+              </Link>
+            </div>
+          ) : (
+            <div className="divide-y divide-[#F1F5F9]">
+              {applications.slice(0, 4).map(app => (
+                <div key={app.id} className="px-5 py-4">
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-sm font-medium text-[#111827] truncate mr-2">{app.job?.title}</p>
+                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border shrink-0 ${statusColors[app.status]}`}>
+                      {statusLabels[app.status]}
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#6B7280]">{app.job?.company} · {formatDate(app.created_at)}</p>
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Resume banner */}
         

@@ -294,6 +294,56 @@ export async function deleteResume(resume) {
   if (error) throw error
 }
 
+// ------------------------------------------------------------
+// Profile avatars
+// ------------------------------------------------------------
+
+const AVATAR_BUCKET = 'avatars'
+
+export async function uploadAvatar(userId, file) {
+  const ext = (file.name.split('.').pop() || 'jpg').toLowerCase()
+  const path = `${userId}/${Date.now()}.${ext}`
+
+  const { error: uploadError } = await supabase.storage
+    .from(AVATAR_BUCKET)
+    .upload(path, file, { upsert: true })
+  if (uploadError) throw uploadError
+
+  const { data: publicUrl } = supabase.storage.from(AVATAR_BUCKET).getPublicUrl(path)
+
+  const { error } = await supabase
+    .from('profiles')
+    .update({ avatar: publicUrl.publicUrl })
+    .eq('id', userId)
+  if (error) throw error
+
+  return publicUrl.publicUrl
+}
+
+export async function removeAvatar(userId) {
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('avatar')
+    .eq('id', userId)
+    .maybeSingle()
+
+  if (profile?.avatar) {
+    try {
+      const url = new URL(profile.avatar)
+      const path = url.pathname.split('/').slice(2).join('/')
+      if (path) await supabase.storage.from(AVATAR_BUCKET).remove([path])
+    } catch {
+      // ignore storage cleanup failures — the DB field is what matters
+    }
+  }
+
+  const { error } = await supabase
+    .from('profiles')
+    .update({ avatar: null })
+    .eq('id', userId)
+  if (error) throw error
+}
+
 export async function saveGeneratedResume(studentId, payload) {
   const { data, error } = await supabase
     .from('resumes')

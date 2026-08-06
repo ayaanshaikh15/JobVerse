@@ -2,9 +2,10 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { toast } from 'sonner'
-import { Briefcase, Eye, EyeOff, ArrowRight } from 'lucide-react'
+import { Eye, EyeOff, ArrowRight } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 import { getRoleHomePath } from '../../lib/utils'
+import Logo from '../../components/Logo'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -43,13 +44,8 @@ export default function Login() {
         transition={{ duration: 0.4 }}
         className="w-full max-w-md"
       >
-        <Link to="/" className="flex items-center gap-2 justify-center mb-8">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-600 to-cyan-500 flex items-center justify-center shadow-md">
-            <Briefcase size={18} className="text-white" />
-          </div>
-          <span className="font-bold text-xl text-[#111827]" style={{ fontFamily: 'Poppins, sans-serif' }}>
-            Job<span className="text-indigo-600">Verse</span>
-          </span>
+        <Link to="/" className="flex justify-center mb-8">
+          <Logo size={36} textSize={20} />
         </Link>
 
         <div className="bg-white rounded-3xl p-8 shadow-[0_8px_40px_rgba(0,0,0,0.08)] border border-[#E2E8F0]">

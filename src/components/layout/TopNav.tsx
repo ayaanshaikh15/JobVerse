@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Bell, Search, Briefcase, Sun, Moon } from 'lucide-react'
+import { Bell, Search, Sun, Moon } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 import { useTheme } from '../../hooks/useTheme'
 import { getInitials } from '../../lib/utils'
+import Logo from '../Logo'
 
 export default function TopNav() {
   const { profile } = useAuth()
@@ -16,13 +17,8 @@ export default function TopNav() {
   return (
     <header className="sticky top-0 z-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-[#E2E8F0] px-4 md:px-6 py-3 transition-colors duration-200">
       <div className="flex items-center justify-between gap-4">
-        <Link to="/" className="lg:hidden flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-600 to-cyan-500 flex items-center justify-center">
-            <Briefcase size={14} className="text-white" />
-          </div>
-          <span className="font-semibold text-sm" style={{ fontFamily: 'Poppins, sans-serif' }}>
-            Job<span className="text-indigo-600">Verse</span>
-          </span>
+        <Link to="/" className="lg:hidden">
+          <Logo size={28} textSize={14} />
         </Link>
 
         <div className="hidden lg:block">
@@ -77,9 +73,13 @@ export default function TopNav() {
 
           <Link
             to={profile?.role === 'recruiter' ? '/recruiter/profile' : profile?.role === 'admin' ? '/admin/profile' : '/student/profile'}
-            className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-cyan-500 flex items-center justify-center text-white text-xs font-semibold shadow-sm hover:shadow-md transition-all"
+            className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-cyan-500 flex items-center justify-center text-white text-xs font-semibold shadow-sm hover:shadow-md transition-all overflow-hidden"
           >
-            {profile ? getInitials(profile.name) : 'U'}
+            {profile?.avatar ? (
+              <img src={profile.avatar} alt="" className="w-full h-full object-cover" />
+            ) : (
+              profile ? getInitials(profile.name) : 'U'
+            )}
           </Link>
         </div>
       </div>

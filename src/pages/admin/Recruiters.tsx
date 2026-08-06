@@ -114,9 +114,13 @@ export default function Recruiters() {
               <motion.tr key={r.id} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }} className="hover:bg-[#F8FAFC] transition-colors">
                 <td className="px-5 py-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500 to-teal-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
-                      {(r.college || r.name || '?')[0]}
-                    </div>
+                    {r.avatar ? (
+                      <img src={r.avatar} alt="" className="w-9 h-9 rounded-xl object-cover shrink-0" />
+                    ) : (
+                      <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500 to-teal-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
+                        {(r.college || r.name || '?')[0]}
+                      </div>
+                    )}
                     <p className="text-sm font-medium text-[#111827]">{r.college || '—'}</p>
                   </div>
                 </td>
@@ -153,9 +157,13 @@ export default function Recruiters() {
         {filtered.map((r, i) => (
           <motion.div key={r.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="bg-white rounded-2xl border border-[#E2E8F0] shadow-card p-4">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-teal-500 flex items-center justify-center text-white text-sm font-bold">
-                {(r.college || r.name || '?')[0]}
-              </div>
+              {r.avatar ? (
+                <img src={r.avatar} alt="" className="w-10 h-10 rounded-xl object-cover" />
+              ) : (
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-teal-500 flex items-center justify-center text-white text-sm font-bold">
+                  {(r.college || r.name || '?')[0]}
+                </div>
+              )}
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-[#111827] text-sm truncate">{r.college || '—'}</p>
                 <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${recruiterStatusColors[r.status]}`}>

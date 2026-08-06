@@ -31,7 +31,7 @@ export async function fetchAdminStats() {
 export async function fetchAllStudents() {
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, name, email, college, created_at')
+    .select('id, name, email, college, avatar, created_at')
     .eq('role', 'student')
     .order('created_at', { ascending: false })
   if (error) throw error
@@ -50,7 +50,7 @@ export async function deleteStudent(id) {
 export async function fetchAllRecruiters() {
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, name, email, college, website, status, created_at')
+    .select('id, name, email, college, website, status, avatar, created_at')
     .eq('role', 'recruiter')
     .order('created_at', { ascending: false })
   if (error) throw error
@@ -104,7 +104,7 @@ export async function fetchAllApplications() {
   if (studentIds.length > 0) {
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
-      .select('id, name, email')
+      .select('id, name, email, avatar')
       .in('id', studentIds)
     if (profilesError) throw profilesError
     profileMap = new Map((profiles ?? []).map(p => [p.id, p]))

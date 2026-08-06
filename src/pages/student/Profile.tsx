@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { toast } from 'sonner'
-import { Camera, Edit2, LogOut, FileText, Download, CheckCircle2, Phone, Mail, Building2, MapPin, Sparkles } from 'lucide-react'
+import { Edit2, LogOut, FileText, Download, CheckCircle2, Phone, Mail, Building2, MapPin, Sparkles } from 'lucide-react'
 import SignOutModal from '../../components/SignOutModal'
 import DashboardLayout from '../../components/layout/DashboardLayout'
+import AvatarWithUpload from '../../components/AvatarWithUpload'
 import { useAuth } from '../../hooks/useAuth'
 import { useResume } from '../../hooks/useResume'
-import { getInitials } from '../../lib/utils'
 
 export default function StudentProfile() {
   const { user, profile, logout, updateProfile, isProfileComplete } = useAuth()
@@ -85,12 +85,7 @@ export default function StudentProfile() {
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-3xl border border-[#E2E8F0] shadow-card p-6 mb-5">
           <div className="flex items-center gap-5">
             <div className="relative">
-              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-500 to-cyan-500 flex items-center justify-center text-white text-2xl font-bold shadow-lg">
-                {profile ? getInitials(profile.name) : 'U'}
-              </div>
-              <button className="absolute -bottom-1 -right-1 w-7 h-7 bg-white border border-[#E2E8F0] rounded-xl flex items-center justify-center text-[#6B7280] hover:text-indigo-600 shadow-sm transition-colors">
-                <Camera size={13} />
-              </button>
+              <AvatarWithUpload user={user} profile={profile} updateProfile={updateProfile} />
             </div>
             <div className="flex-1">
               <h2 className="text-xl font-bold text-[#111827]" style={{ fontFamily: 'Poppins, sans-serif' }}>{profile?.name}</h2>

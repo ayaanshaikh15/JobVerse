@@ -87,7 +87,7 @@ export default function Resume() {
               </div>
               <h2 className="text-xl font-bold text-white mb-1" style={{ fontFamily: 'Poppins, sans-serif' }}>Your AI resume is ready</h2>
               <p className="text-indigo-100 text-sm mb-4 max-w-sm">You&apos;ve already generated your AI resume — download it anytime, you won&apos;t be able to create a new one.</p>
-              <button onClick={downloadGenerated} className="inline-flex items-center gap-2 !bg-white text-indigo-700 font-semibold text-sm px-5 py-2.5 rounded-xl hover:shadow-lg transition-all">
+              <button onClick={downloadGenerated} className="inline-flex items-center gap-2 bg-slate-50 text-slate-900 font-semibold text-sm px-5 py-2.5 rounded-xl hover:bg-white hover:shadow-lg transition-all">
                 <Download size={15} /> Download PDF
               </button>
             </div>
@@ -103,7 +103,7 @@ export default function Resume() {
               </div>
               <h2 className="text-xl font-bold text-white mb-1" style={{ fontFamily: 'Poppins, sans-serif' }}>Build an ATS-Friendly Resume</h2>
               <p className="text-indigo-100 text-sm mb-4 max-w-sm">Our AI analyzes thousands of job descriptions to create a tailored, optimized resume that passes every ATS filter.</p>
-              <Link to="/student/resume/builder" className="inline-flex items-center gap-2 !bg-white text-indigo-700 font-semibold text-sm px-5 py-2.5 rounded-xl hover:shadow-lg transition-all">
+              <Link to="/student/resume/builder" className="inline-flex items-center gap-2 bg-slate-50 text-slate-900 font-semibold text-sm px-5 py-2.5 rounded-xl hover:bg-white hover:shadow-lg transition-all">
                 <Sparkles size={15} /> Generate AI Resume
               </Link>
             </div>
@@ -115,7 +115,7 @@ export default function Resume() {
 
           <AnimatePresence mode="wait">
             {resume ? (
-              <motion.div key="uploaded" initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.96 }} className="border-2 border-green-200 bg-green-50/50 rounded-2xl p-5">
+              <motion.div key="uploaded" initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.96 }} className="border-2 border-green-200 bg-green-50 rounded-2xl p-5">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center">
                     <FileText size={22} className="text-green-600" />
@@ -133,12 +133,12 @@ export default function Resume() {
                   {resume.resume_url ? (
                     <>
                       <a href={resume.resume_url} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-xs font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-2 rounded-xl transition-all"><Eye size={13} /> Preview</a>
-                      <a href={resume.resume_url} download className="flex items-center gap-1.5 text-xs font-medium text-[#374151] bg-[#F8FAFC] hover:bg-[#F1F5F9] border border-[#E2E8F0] px-3 py-2 rounded-xl transition-all"><Download size={13} /> Download</a>
+                      <a href={resume.resume_url} download className="flex items-center gap-1.5 text-xs font-medium text-[#374151] bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 border border-[#E2E8F0] px-3 py-2 rounded-xl transition-all"><Download size={13} /> Download</a>
                     </>
                   ) : (
-                    <button onClick={downloadGenerated} className="flex items-center gap-1.5 text-xs font-medium text-[#374151] bg-[#F8FAFC] hover:bg-[#F1F5F9] border border-[#E2E8F0] px-3 py-2 rounded-xl transition-all"><Download size={13} /> Download</button>
+                    <button onClick={downloadGenerated} className="flex items-center gap-1.5 text-xs font-medium text-[#374151] bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 border border-[#E2E8F0] px-3 py-2 rounded-xl transition-all"><Download size={13} /> Download</button>
                   )}
-                  <button onClick={() => inputRef.current?.click()} className="flex items-center gap-1.5 text-xs font-medium text-[#374151] bg-[#F8FAFC] hover:bg-[#F1F5F9] border border-[#E2E8F0] px-3 py-2 rounded-xl transition-all"><Upload size={13} /> Replace</button>
+                  <button onClick={() => inputRef.current?.click()} className="flex items-center gap-1.5 text-xs font-medium text-[#374151] bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 border border-[#E2E8F0] px-3 py-2 rounded-xl transition-all"><Upload size={13} /> Replace</button>
                   <button onClick={handleDelete} className="flex items-center gap-1.5 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 px-3 py-2 rounded-xl transition-all ml-auto"><Trash2 size={13} /> Delete</button>
                 </div>
               </motion.div>
@@ -168,7 +168,7 @@ export default function Resume() {
                     </div>
                     <p className="font-semibold text-[#374151] mb-1">Drag & drop your resume here</p>
                     <p className="text-sm text-[#9CA3AF] mb-3">or click to browse</p>
-                    <span className="text-xs text-[#CBD5E1]">PDF only · Max 5MB</span>
+                    <span className="text-xs text-[#9CA3AF]">PDF only · Max 5MB</span>
                   </>
                 )}
               </motion.div>

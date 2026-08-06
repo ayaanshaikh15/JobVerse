@@ -7,8 +7,6 @@ import DashboardLayout from '../../components/layout/DashboardLayout'
 import { useJobs, useSavedJobs } from '../../hooks/useJobs'
 import { typeColors, formatDate } from '../../lib/utils'
 
-const categories = ['All', 'Engineering', 'Design', 'Data Science', 'DevOps', 'Product']
-const locations = ['All Locations', 'Remote', 'Bangalore, IN', 'San Francisco, CA', 'Hyderabad, IN']
 const types = ['All Types', 'full-time', 'internship', 'part-time', 'contract']
 
 function JobCard({ job, isSaved, onToggleSave }) {
@@ -40,7 +38,7 @@ function JobCard({ job, isSaved, onToggleSave }) {
 
       <div className="flex flex-wrap gap-2 text-xs text-[#6B7280]">
         <span className="flex items-center gap-1"><MapPin size={12} />{job.location}</span>
-        <span className="flex items-center gap-1"><Clock size={12} />{formatDate(job.created_at)}</span>
+        <span className="flex items-center gap-1"><Clock size={12} />Posted {formatDate(job.created_at)}</span>
       </div>
 
       <div className="flex flex-wrap gap-1.5">
@@ -80,11 +78,18 @@ export default function Jobs() {
   const { jobs, loading } = useJobs()
   const { isSaved, toggle } = useSavedJobs()
 
+  const locationOptions = ['All Locations', ...new Set(jobs.map(j => j.location).filter(Boolean))]
+  const categoryOptions = ['All', ...new Set(jobs.map(j => j.category).filter(Boolean))]
+
   const filtered = jobs.filter(job => {
-    const matchQuery = !query ||
-      job.title.toLowerCase().includes(query.toLowerCase()) ||
-      job.company.toLowerCase().includes(query.toLowerCase()) ||
-      job.skills.some(s => s.toLowerCase().includes(query.toLowerCase()))
+    const q = query.toLowerCase().trim()
+    const title = (job.title || '').toLowerCase()
+    const company = (job.company || '').toLowerCase()
+    const skills = job.skills || []
+    const matchQuery = !q ||
+      title.includes(q) ||
+      company.includes(q) ||
+      skills.some(s => (s || '').toLowerCase().includes(q))
     const matchCat = category === 'All' || job.category === category
     const matchLoc = location === 'All Locations' || job.location === location
     const matchType = jobType === 'All Types' || job.type === jobType
@@ -124,20 +129,20 @@ export default function Jobs() {
               onChange={e => setLocation(e.target.value)}
               className="flex-1 sm:flex-none border border-[#E2E8F0] rounded-xl px-3 py-2.5 text-sm text-[#374151] bg-[#F8FAFC] focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 cursor-pointer"
             >
-              {locations.map(l => <option key={l}>{l}</option>)}
+              {locationOptions.map(l => <option key={l}>{l}</option>)}
             </select>
             <select
               value={jobType}
               onChange={e => setJobType(e.target.value)}
               className="flex-1 sm:flex-none border border-[#E2E8F0] rounded-xl px-3 py-2.5 text-sm text-[#374151] bg-[#F8FAFC] focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 cursor-pointer"
             >
-              {types.map(t => <option key={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>)}
+              {types.map(t => <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>)}
             </select>
           </div>
         </div>
 
         <div className="flex gap-2 mt-3 overflow-x-auto pb-1 scroll-hidden">
-          {categories.map(cat => (
+          {categoryOptions.map(cat => (
             <button
               key={cat}
               onClick={() => setCategory(cat)}

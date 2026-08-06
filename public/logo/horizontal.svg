@@ -1,0 +1,8 @@
+<svg width="220" height="48" viewBox="0 0 220 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="48" height="48" rx="12" fill="#4F46E5"/>
+  <path d="M16 9V26c0 5.5 3.5 9 10 9c5 0 8-2.5 8-7" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M10 8.5L16 2l6 6.5" stroke="#06B6D4" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="m32 29 3 3 6.5-9" stroke="#06B6D4" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="62" y="31" font-family="Inter, 'Plus Jakarta Sans', 'Manrope', sans-serif" font-size="25" font-weight="700" fill="#111827">Job</text>
+  <text x="103" y="31" font-family="Inter, 'Plus Jakarta Sans', 'Manrope', sans-serif" font-size="25" font-weight="500" fill="#4F46E5">Verse</text>
+</svg>

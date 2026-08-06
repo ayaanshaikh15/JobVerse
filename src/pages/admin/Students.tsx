@@ -91,9 +91,13 @@ export default function Students() {
               <motion.tr key={s.id} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }} className="hover:bg-[#F8FAFC] transition-colors">
                 <td className="px-5 py-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-400 to-violet-400 flex items-center justify-center text-white text-xs font-semibold shrink-0">
-                      {getInitials(s.name || '?')}
-                    </div>
+                    {s.avatar ? (
+                      <img src={s.avatar} alt="" className="w-9 h-9 rounded-full object-cover shrink-0" />
+                    ) : (
+                      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-400 to-violet-400 flex items-center justify-center text-white text-xs font-semibold shrink-0">
+                        {getInitials(s.name || '?')}
+                      </div>
+                    )}
                     <p className="text-sm font-medium text-[#111827]">{s.name || '—'}</p>
                   </div>
                 </td>
@@ -124,9 +128,13 @@ export default function Students() {
         {filtered.map((s, i) => (
           <motion.div key={s.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="bg-white rounded-2xl border border-[#E2E8F0] shadow-card p-4">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-400 to-violet-400 flex items-center justify-center text-white text-sm font-bold">
-                {getInitials(s.name || '?')}
-              </div>
+              {s.avatar ? (
+                <img src={s.avatar} alt="" className="w-10 h-10 rounded-full object-cover" />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-400 to-violet-400 flex items-center justify-center text-white text-sm font-bold">
+                  {getInitials(s.name || '?')}
+                </div>
+              )}
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-[#111827] text-sm truncate">{s.name}</p>
                 <p className="text-xs text-[#6B7280] truncate">{s.email}</p>

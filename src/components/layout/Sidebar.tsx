@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 import { getInitials } from '../../lib/utils'
+import Logo from '../Logo'
 
 const studentLinks = [
   { to: '/student/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -57,13 +58,8 @@ export default function Sidebar() {
   return (
     <>
       <aside className="hidden lg:flex flex-col w-64 min-h-screen bg-white border-r border-[#E2E8F0] px-4 py-6 fixed top-0 left-0 z-30 transition-colors duration-200">
-        <div className="flex items-center gap-2.5 px-2 mb-8">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-600 to-cyan-500 flex items-center justify-center shadow-sm">
-            <Briefcase size={16} className="text-white" />
-          </div>
-          <span className="font-semibold text-[17px] text-[#111827]" style={{ fontFamily: 'Poppins, sans-serif' }}>
-            Job<span className="text-indigo-600">Verse</span>
-          </span>
+        <div className="px-2 mb-8">
+          <Logo size={34} />
         </div>
 
         <nav className="flex-1 space-y-1">
@@ -101,8 +97,12 @@ export default function Sidebar() {
             onClick={() => navigate(profilePath)}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl mb-2 hover:bg-[#F8FAFC] transition-all duration-150 group"
           >
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-cyan-500 flex items-center justify-center text-white text-xs font-semibold shrink-0">
-              {profile ? getInitials(profile.name) : 'U'}
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-cyan-500 flex items-center justify-center text-white text-xs font-semibold shrink-0 overflow-hidden">
+              {profile?.avatar ? (
+                <img src={profile.avatar} alt="" className="w-full h-full object-cover" />
+              ) : (
+                profile ? getInitials(profile.name) : 'U'
+              )}
             </div>
             <div className="min-w-0 text-left">
               <p className="text-sm font-medium text-[#111827] truncate">{profile?.name}</p>
