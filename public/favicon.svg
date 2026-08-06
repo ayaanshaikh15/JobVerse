@@ -1,6 +1,5 @@
-<svg width="64" height="64" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="48" height="48" rx="12" fill="#4F46E5"/>
-  <path d="M16 9V26c0 5.5 3.5 9 10 9c5 0 8-2.5 8-7" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M10 8.5L16 2l6 6.5" stroke="#06B6D4" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="m32 29 3 3 6.5-9" stroke="#06B6D4" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" rx="14" fill="#4F46E5"/>
+  <text x="32" y="31" text-anchor="middle" fill="#FFFFFF" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700">Job</text>
+  <text x="32" y="50" text-anchor="middle" fill="#A5B4FC" font-family="Inter, Arial, sans-serif" font-size="17" font-weight="500">Verse</text>
 </svg>
