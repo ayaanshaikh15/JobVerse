@@ -1,7 +1,8 @@
+import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
-import { Edit2, Trash2, Users, PlusCircle, MapPin, DollarSign } from 'lucide-react'
+import { Edit2, Trash2, Users, PlusCircle, MapPin, DollarSign, AlertTriangle, X } from 'lucide-react'
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import { useRecruiterJobs } from '../../hooks/useJobs'
 import { useRecruiterApplications } from '../../hooks/useApplications'
@@ -13,6 +14,7 @@ export default function MyJobs() {
   const { user } = useAuth()
   const { jobs, loading, deleteJob } = useRecruiterJobs(user?.id)
   const { applications: applicants } = useRecruiterApplications(user?.id)
+  const [jobToDelete, setJobToDelete] = useState(null)
 
   const applicantCount = (jobId) => applicants.filter(a => a.job_id === jobId).length
 
@@ -23,6 +25,12 @@ export default function MyJobs() {
     } catch (err) {
       toast.error(err?.message || 'Failed to delete job')
     }
+  }
+
+  const confirmDelete = async () => {
+    if (!jobToDelete) return
+    await handleDelete(jobToDelete.id)
+    setJobToDelete(null)
   }
 
   if (loading) {
@@ -121,7 +129,7 @@ export default function MyJobs() {
                 <button onClick={() => navigate(`/recruiter/edit-job/${job.id}`)} className="flex items-center gap-1.5 text-xs font-medium text-[#374151] bg-[#F8FAFC] border border-[#E2E8F0] hover:bg-[#F1F5F9] px-3 py-1.5 rounded-xl transition-all">
                   <Edit2 size={13} /> Edit
                 </button>
-                <button onClick={() => handleDelete(job.id)} className="flex items-center gap-1.5 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-xl transition-all">
+                <button onClick={() => setJobToDelete(job)} className="flex items-center gap-1.5 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-xl transition-all">
                   <Trash2 size={13} /> Delete
                 </button>
               </div>
@@ -129,6 +137,62 @@ export default function MyJobs() {
           ))}
         </AnimatePresence>
       </div>
+
+      <AnimatePresence>
+        {jobToDelete && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+            onClick={() => setJobToDelete(null)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+              className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="flex items-start justify-between p-5 pb-3">
+                <div className="w-11 h-11 rounded-2xl bg-red-50 flex items-center justify-center shrink-0">
+                  <AlertTriangle size={20} className="text-red-600" />
+                </div>
+                <button
+                  onClick={() => setJobToDelete(null)}
+                  className="text-[#9CA3AF] hover:text-[#374151] transition-colors"
+                  aria-label="Close"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+              <div className="px-5 pb-4">
+                <h3 className="text-base font-semibold text-[#111827]" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                  Delete this job post?
+                </h3>
+                <p className="text-sm text-[#6B7280] mt-1.5">
+                  Are you sure you want to delete <span className="font-semibold text-[#111827]">{jobToDelete.title}</span> at {jobToDelete.company}? This action cannot be undone.
+                </p>
+              </div>
+              <div className="flex gap-2 p-5 pt-2 bg-[#F8FAFC] border-t border-[#E2E8F0]">
+                <button
+                  onClick={() => setJobToDelete(null)}
+                  className="flex-1 text-sm font-semibold text-[#374151] bg-white border border-[#E2E8F0] hover:bg-[#F1F5F9] px-4 py-2.5 rounded-xl transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmDelete}
+                  className="flex-1 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 px-4 py-2.5 rounded-xl transition-all shadow-md"
+                >
+                  Delete
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </DashboardLayout>
   )
 }

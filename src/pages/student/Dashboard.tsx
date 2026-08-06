@@ -47,12 +47,14 @@ export default function StudentDashboard() {
   const { jobs } = useJobs()
   const { applications } = useStudentApplications(user?.id)
   const { saved } = useSavedJobs(user?.id)
-  const recentJobs = jobs.slice(0, 4)
+  const recentJobs = [...jobs]
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    .slice(0, 4)
 
   const stats = [
-    { label: 'Applications', value: applications.length, icon: Send, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-    { label: 'Under Review', value: applications.filter(a => a.status === 'reviewing').length, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
-    { label: 'Interviews', value: applications.filter(a => a.status === 'interview').length, icon: TrendingUp, color: 'text-purple-600', bg: 'bg-purple-50' },
+    { label: 'Applications', value: applications.length, icon: Send, color: 'text-indigo-600', bg: 'bg-indigo-50', to: '/student/applications' },
+    { label: 'Under Review', value: applications.filter(a => a.status === 'reviewing').length, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50', to: '/student/applications?status=reviewing' },
+    { label: 'Interviews', value: applications.filter(a => a.status === 'interview').length, icon: TrendingUp, color: 'text-purple-600', bg: 'bg-purple-50', to: '/student/applications?status=interview' },
     { label: 'Saved Jobs', value: saved.length, icon: BookmarkCheck, color: 'text-cyan-600', bg: 'bg-cyan-50', to: '/student/saved' },
   ]
 
@@ -115,7 +117,7 @@ export default function StudentDashboard() {
           className="lg:col-span-3 bg-white rounded-2xl border border-[#E2E8F0] shadow-card overflow-hidden"
         >
           <div className="flex items-center justify-between px-5 py-4 border-b border-[#F1F5F9]">
-            <h2 className="text-sm font-semibold text-[#111827]">Recommended Jobs</h2>
+            <h2 className="text-sm font-semibold text-[#111827]">Recent Job Posts</h2>
             <Link to="/student/jobs" className="flex items-center gap-1 text-xs text-indigo-600 font-medium hover:text-indigo-700">
               View all <ArrowRight size={12} />
             </Link>

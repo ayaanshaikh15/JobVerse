@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { Send, FileText, ArrowUpRight, Calendar, CalendarClock, MessageSquare } from 'lucide-react'
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import { useStudentApplications } from '../../hooks/useApplications'
@@ -7,6 +7,14 @@ import { useAuth } from '../../hooks/useAuth'
 import { statusColors, statusLabels, formatDate } from '../../lib/utils'
 
 const statusOrder = ['interview', 'attended', 'reviewing', 'applied', 'accepted', 'rejected']
+
+const filterChips = [
+  { label: 'All', value: null },
+  { label: 'Under Review', value: 'reviewing' },
+  { label: 'Interview', value: 'interview' },
+  { label: 'Accepted', value: 'accepted' },
+  { label: 'Rejected', value: 'rejected' },
+]
 
 function formatInterview(dateStr) {
   const d = new Date(dateStr)
@@ -22,7 +30,12 @@ function formatInterview(dateStr) {
 export default function Applications() {
   const { user } = useAuth()
   const { applications, loading } = useStudentApplications(user?.id)
-  const sorted = [...applications].sort((a, b) => statusOrder.indexOf(a.status) - statusOrder.indexOf(b.status))
+  const [searchParams] = useSearchParams()
+  const statusFilter = searchParams.get('status')
+  const filtered = statusFilter
+    ? applications.filter(a => a.status === statusFilter)
+    : applications
+  const sorted = [...filtered].sort((a, b) => statusOrder.indexOf(a.status) - statusOrder.indexOf(b.status))
 
   if (loading) {
     return (
@@ -45,11 +58,21 @@ export default function Applications() {
           <div className="w-20 h-20 rounded-3xl bg-[#F8FAFC] border border-[#E2E8F0] flex items-center justify-center mx-auto mb-4">
             <Send size={28} className="text-[#CBD5E1]" />
           </div>
-          <p className="font-semibold text-[#374151]">No applications yet</p>
-          <p className="text-sm text-[#6B7280] mt-1">Start applying to jobs and track your progress here</p>
-          <Link to="/student/jobs" className="inline-block mt-4 text-sm text-indigo-600 font-medium hover:text-indigo-700">
-            Browse Jobs →
-          </Link>
+          <p className="font-semibold text-[#374151]">
+            {statusFilter ? 'No applications in this stage' : 'No applications yet'}
+          </p>
+          <p className="text-sm text-[#6B7280] mt-1">
+            {statusFilter ? 'Applications in this stage will appear here' : 'Start applying to jobs and track your progress here'}
+          </p>
+          {statusFilter ? (
+            <Link to="/student/applications" className="inline-block mt-4 text-sm text-indigo-600 font-medium hover:text-indigo-700">
+              View all applications →
+            </Link>
+          ) : (
+            <Link to="/student/jobs" className="inline-block mt-4 text-sm text-indigo-600 font-medium hover:text-indigo-700">
+              Browse Jobs →
+            </Link>
+          )}
         </div>
       </DashboardLayout>
     )
@@ -61,15 +84,37 @@ export default function Applications() {
         <h1 className="text-2xl font-bold text-[#111827] mb-1" style={{ fontFamily: 'Poppins, sans-serif' }}>
           My Applications
         </h1>
-        <p className="text-sm text-[#6B7280]">{sorted.length} applications</p>
+        <p className="text-sm text-[#6B7280]">
+          {sorted.length} {sorted.length === 1 ? 'application' : 'applications'}
+          {statusFilter ? ` · ${statusLabels[statusFilter]}` : ''}
+        </p>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2 mb-6">
+        {filterChips.map(({ label, value }) => {
+          const active = (value ?? null) === statusFilter
+          return (
+            <Link
+              key={label}
+              to={value ? `/student/applications?status=${value}` : '/student/applications'}
+              className={`px-3.5 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                active
+                  ? 'bg-indigo-600 text-white border-indigo-600'
+                  : 'bg-white text-[#6B7280] border-[#E2E8F0] hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200'
+              }`}
+            >
+              {label}
+            </Link>
+          )
+        })}
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
         {[
-          { label: 'Total', count: sorted.length, bg: 'bg-indigo-50', border: 'border-indigo-100', countCls: 'text-indigo-700', labelCls: 'text-indigo-600' },
-          { label: 'Reviewing', count: sorted.filter(a => a.status === 'reviewing').length, bg: 'bg-amber-50', border: 'border-amber-100', countCls: 'text-amber-700', labelCls: 'text-amber-600' },
-          { label: 'Interview', count: sorted.filter(a => a.status === 'interview').length, bg: 'bg-purple-50', border: 'border-purple-100', countCls: 'text-purple-700', labelCls: 'text-purple-600' },
-          { label: 'Accepted', count: sorted.filter(a => a.status === 'accepted').length, bg: 'bg-green-50', border: 'border-green-100', countCls: 'text-green-700', labelCls: 'text-green-600' },
+          { label: 'Total', count: applications.length, bg: 'bg-indigo-50', border: 'border-indigo-100', countCls: 'text-indigo-700', labelCls: 'text-indigo-600' },
+          { label: 'Reviewing', count: applications.filter(a => a.status === 'reviewing').length, bg: 'bg-amber-50', border: 'border-amber-100', countCls: 'text-amber-700', labelCls: 'text-amber-600' },
+          { label: 'Interview', count: applications.filter(a => a.status === 'interview').length, bg: 'bg-purple-50', border: 'border-purple-100', countCls: 'text-purple-700', labelCls: 'text-purple-600' },
+          { label: 'Accepted', count: applications.filter(a => a.status === 'accepted').length, bg: 'bg-green-50', border: 'border-green-100', countCls: 'text-green-700', labelCls: 'text-green-600' },
         ].map(({ label, count, bg, border, countCls, labelCls }) => (
           <div key={label} className={`${bg} border ${border} rounded-2xl p-4 text-center`}>
             <p className={`text-2xl font-bold ${countCls}`} style={{ fontFamily: 'Poppins, sans-serif' }}>{count}</p>
