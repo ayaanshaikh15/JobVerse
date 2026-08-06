@@ -5,13 +5,12 @@ const PAGE_HEIGHT = 297
 const MARGIN = 16
 const CONTENT_WIDTH = PAGE_WIDTH - MARGIN * 2
 
-const ACCENT = [79, 70, 229]
+const ACCENT = [0, 0, 0]
 const DARK = [17, 24, 39]
 const GRAY = [107, 114, 128]
 const LIGHT = [148, 163, 184]
 
 const NAME_SIZE = 22
-const CONTACT_SIZE = 9.5
 const SECTION_TITLE_SIZE = 11
 const BODY_SIZE = 10.5
 const SUB_SIZE = 10
@@ -76,33 +75,26 @@ function drawBullet(doc, y, text, { size = BODY_SIZE, color = DARK } = {}) {
   y.current += BULLET_GAP
 }
 
-function drawHeader(doc, y, resume) {
-  const name = resume.name || 'Resume'
+function drawLabelValue(doc, y, label, value) {
+  if (!value) return
+  ensureRoom(doc, y, LINE_HEIGHT)
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(BODY_SIZE)
+  doc.setTextColor(...DARK)
+  const labelText = `${label}: `
+  doc.text(labelText, MARGIN, y.current)
+  doc.setFont('helvetica', 'normal')
+  doc.text(value, MARGIN + doc.getTextWidth(labelText), y.current)
+  y.current += LINE_HEIGHT
+}
 
+function drawHeader(doc, y, resume) {
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(NAME_SIZE)
   doc.setTextColor(...DARK)
-  doc.text(name, PAGE_WIDTH / 2, y.current, { align: 'center' })
-  y.current += 7
+  doc.text('Resume', PAGE_WIDTH / 2, y.current, { align: 'center' })
+  y.current += 6
 
-  const contact = [resume.email, resume.phone].filter(Boolean)
-  if (contact.length) {
-    doc.setFont('helvetica', 'normal')
-    doc.setFontSize(CONTACT_SIZE)
-    doc.setTextColor(...GRAY)
-    doc.text(contact.join('   ·   '), PAGE_WIDTH / 2, y.current, { align: 'center' })
-    y.current += 4.6
-  }
-
-  const links = [resume.linkedin, resume.github].filter(Boolean)
-  if (links.length) {
-    doc.setFontSize(CONTACT_SIZE)
-    doc.setTextColor(...ACCENT)
-    doc.text(links.join('   ·   '), PAGE_WIDTH / 2, y.current, { align: 'center' })
-    y.current += 4.6
-  }
-
-  y.current += 1.5
   doc.setDrawColor(...ACCENT)
   doc.setLineWidth(1)
   doc.line(MARGIN, y.current, PAGE_WIDTH - MARGIN, y.current)
@@ -114,6 +106,14 @@ export function downloadResumePdf(resume) {
   const y = { current: MARGIN }
 
   drawHeader(doc, y, resume)
+
+  drawSectionTitle(doc, y, 'Personal Information')
+  drawLabelValue(doc, y, 'Name', resume.name)
+  drawLabelValue(doc, y, 'Email', resume.email)
+  drawLabelValue(doc, y, 'Phone no', resume.phone)
+  drawLabelValue(doc, y, 'LinkedIn', resume.linkedin)
+  drawLabelValue(doc, y, 'Github', resume.github)
+  y.current += 3
 
   if (resume.summary) {
     drawSectionTitle(doc, y, 'Summary')
@@ -175,5 +175,5 @@ export function downloadResumePdf(resume) {
     doc.text(`${i} / ${pageCount}`, PAGE_WIDTH / 2, PAGE_HEIGHT - 8, { align: 'center' })
   }
 
-  doc.save(`${(resume.name || 'resume').replace(/\s+/g, '-').toLowerCase()}.pdf`)
+  doc.save('JobVerse.pdf')
 }
