@@ -5,11 +5,19 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title><!-- figma:title --></title>
+    <link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet" />
     <!-- figma:head-end -->
   </head>
-  <body>
+  <body >
     <!-- figma:body-start -->
     <div id="root"></div>
+    <script type="module">
+      import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
+
+      createChat({
+        webhookUrl: 'https://ayaanshaikh04.app.n8n.cloud/webhook/2808bf9c-e4b8-40c3-a4fc-76c09030b919/chat'
+      });
+    </script>
     <script type="module" src="/src/main.tsx"></script>
     <!-- figma:body-end -->
   </body>

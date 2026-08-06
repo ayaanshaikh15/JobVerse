@@ -282,3 +282,14 @@ h1, h2, h3, h4, h5, h6 {
 a, button {
   transition: all 0.15s ease;
 }
+
+/* ── n8n chat widget above the mobile bottom nav ────────── */
+:root {
+  --chat--window--bottom: var(--chat--spacing);
+}
+
+@media (max-width: 1023px) {
+  :root {
+    --chat--window--bottom: 6rem;
+  }
+}

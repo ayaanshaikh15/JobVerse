@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.7.1",
+    "@n8n/chat": "^1.32.2",
     "@supabase/supabase-js": "^2.111.0",
     "framer-motion": "^12.43.0",
     "jspdf": "^4.2.1",

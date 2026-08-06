@@ -46,21 +46,21 @@ export default function StudentDashboard() {
   const { user } = useAuth()
   const { jobs } = useJobs()
   const { applications } = useStudentApplications(user?.id)
-  const { saved } = useSavedJobs()
+  const { saved } = useSavedJobs(user?.id)
   const recentJobs = jobs.slice(0, 4)
 
   const stats = [
     { label: 'Applications', value: applications.length, icon: Send, color: 'text-indigo-600', bg: 'bg-indigo-50' },
     { label: 'Under Review', value: applications.filter(a => a.status === 'reviewing').length, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
     { label: 'Interviews', value: applications.filter(a => a.status === 'interview').length, icon: TrendingUp, color: 'text-purple-600', bg: 'bg-purple-50' },
-    { label: 'Saved Jobs', value: saved.length, icon: BookmarkCheck, color: 'text-cyan-600', bg: 'bg-cyan-50' },
+    { label: 'Saved Jobs', value: saved.length, icon: BookmarkCheck, color: 'text-cyan-600', bg: 'bg-cyan-50', to: '/student/saved' },
   ]
 
   return (
     <DashboardLayout>
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        {stats.map(({ label, value, icon: Icon, color, bg }, i) => (
+        {stats.map(({ label, value, icon: Icon, color, bg, to }, i) => (
           <motion.div
             key={label}
             initial={{ opacity: 0, y: 12 }}
@@ -68,11 +68,13 @@ export default function StudentDashboard() {
             transition={{ delay: i * 0.06 }}
             className="bg-white rounded-2xl p-5 border border-[#E2E8F0] shadow-card"
           >
-            <div className={`w-9 h-9 rounded-xl ${bg} flex items-center justify-center mb-3`}>
-              <Icon size={16} className={color} />
-            </div>
-            <p className="text-2xl font-bold text-[#111827]" style={{ fontFamily: 'Poppins, sans-serif' }}>{value}</p>
-            <p className="text-xs text-[#6B7280] mt-0.5">{label}</p>
+            <Link to={to ?? '#'}>
+              <div className={`w-9 h-9 rounded-xl ${bg} flex items-center justify-center mb-3`}>
+                <Icon size={16} className={color} />
+              </div>
+              <p className="text-2xl font-bold text-[#111827]" style={{ fontFamily: 'Poppins, sans-serif' }}>{value}</p>
+              <p className="text-xs text-[#6B7280] mt-0.5">{label}</p>
+            </Link>
           </motion.div>
         ))}
       </div>

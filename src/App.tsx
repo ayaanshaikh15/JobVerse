@@ -14,6 +14,7 @@ import JobDetail from './pages/student/JobDetail'
 import Resume from './pages/student/Resume'
 import AIResumeBuilder from './pages/student/AIResumeBuilder'
 import Applications from './pages/student/Applications'
+import SavedJobs from './pages/student/SavedJobs'
 import StudentProfile from './pages/student/Profile'
 
 import RecruiterDashboard from './pages/recruiter/Dashboard'
@@ -73,6 +74,7 @@ function AppRoutes() {
       <Route path="/student/resume" element={<ProtectedRoute role="student"><Resume /></ProtectedRoute>} />
       <Route path="/student/resume/builder" element={<ProtectedRoute role="student"><AIResumeBuilder /></ProtectedRoute>} />
       <Route path="/student/applications" element={<ProtectedRoute role="student"><Applications /></ProtectedRoute>} />
+      <Route path="/student/saved" element={<ProtectedRoute role="student"><SavedJobs /></ProtectedRoute>} />
       <Route path="/student/profile" element={<ProtectedRoute role="student" allowIncomplete><StudentProfile /></ProtectedRoute>} />
 
       <Route path="/recruiter/dashboard" element={<ProtectedRoute role="recruiter"><RecruiterDashboard /></ProtectedRoute>} />

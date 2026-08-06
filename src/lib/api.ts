@@ -212,6 +212,48 @@ export async function updateApplicationStatus(id, status) {
   if (error) throw error
 }
 
+// ------------------------------------------------------------
+// Saved jobs
+// ------------------------------------------------------------
+
+export async function fetchSavedJobIds(studentId) {
+  const { data, error } = await supabase
+    .from('saved_jobs')
+    .select('job_id')
+    .eq('student_id', studentId)
+  if (error) throw error
+  return (data ?? []).map(row => row.job_id)
+}
+
+/**
+ * Adds or removes a saved job for the student.
+ * Returns true when the job is now saved, false when it was removed.
+ */
+export async function toggleSavedJob(studentId, jobId) {
+  const { data: existing } = await supabase
+    .from('saved_jobs')
+    .select('job_id')
+    .eq('student_id', studentId)
+    .eq('job_id', jobId)
+    .maybeSingle()
+
+  if (existing) {
+    const { error } = await supabase
+      .from('saved_jobs')
+      .delete()
+      .eq('student_id', studentId)
+      .eq('job_id', jobId)
+    if (error) throw error
+    return false
+  }
+
+  const { error } = await supabase
+    .from('saved_jobs')
+    .insert({ student_id: studentId, job_id: jobId })
+  if (error) throw error
+  return true
+}
+
 export async function updateApplicationWithDetails(id, { status, note, interview_at }) {
   await assertValidTransition(id, status)
   const payload = { status, updated_at: new Date().toISOString() }

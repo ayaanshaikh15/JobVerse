@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { Search, MapPin, Filter, Bookmark, BookmarkCheck, ArrowUpRight, Clock } from 'lucide-react'
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import { useJobs, useSavedJobs } from '../../hooks/useJobs'
+import { useAuth } from '../../hooks/useAuth'
 import { typeColors, formatDate } from '../../lib/utils'
 
 const types = ['All Types', 'full-time', 'internship', 'part-time', 'contract']
@@ -76,7 +77,8 @@ export default function Jobs() {
   const [location, setLocation] = useState('All Locations')
   const [jobType, setJobType] = useState('All Types')
   const { jobs, loading } = useJobs()
-  const { isSaved, toggle } = useSavedJobs()
+  const { user } = useAuth()
+  const { isSaved, toggle } = useSavedJobs(user?.id)
 
   const locationOptions = ['All Locations', ...new Set(jobs.map(j => j.location).filter(Boolean))]
   const categoryOptions = ['All', ...new Set(jobs.map(j => j.category).filter(Boolean))]
@@ -96,10 +98,14 @@ export default function Jobs() {
     return matchQuery && matchCat && matchLoc && matchType
   })
 
-  const handleSave = (jobId) => {
-    const wasSaved = isSaved(jobId)
-    toggle(jobId)
-    toast.success(wasSaved ? 'Job removed from saved' : 'Job saved!')
+  const handleSave = async (jobId) => {
+    try {
+      const nowSaved = await toggle(jobId)
+      if (nowSaved === undefined) return
+      toast.success(nowSaved ? 'Job saved!' : 'Job removed from saved')
+    } catch (err) {
+      toast.error(err?.message || 'Could not update saved job')
+    }
   }
 
   return (

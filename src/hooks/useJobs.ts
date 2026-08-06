@@ -7,6 +7,8 @@ import {
   updateJob as updateJobApi,
   deleteJob as deleteJobApi,
   fetchRecruiterJobs,
+  fetchSavedJobIds,
+  toggleSavedJob as toggleSavedJobApi,
 } from '../lib/api'
 
 export function useJobs() {
@@ -89,23 +91,39 @@ export function useRecruiterJobs(recruiterId) {
   return { jobs, loading, addJob, deleteJob, updateJob, refresh }
 }
 
-export function useSavedJobs() {
-  const [saved, setSaved] = useState(() => {
-    const stored = localStorage.getItem('jobverse_saved')
-    return stored ? JSON.parse(stored) : []
-  })
+export function useSavedJobs(studentId) {
+  const [saved, setSaved] = useState([])
+  const [loading, setLoading] = useState(false)
 
-  const toggle = useCallback((jobId) => {
-    setSaved(prev => {
-      const next = prev.includes(jobId)
-        ? prev.filter(id => id !== jobId)
-        : [...prev, jobId]
-      localStorage.setItem('jobverse_saved', JSON.stringify(next))
-      return next
-    })
-  }, [])
+  const refresh = useCallback(async () => {
+    if (!studentId) {
+      setSaved([])
+      setLoading(false)
+      return
+    }
+    setLoading(true)
+    try {
+      const ids = await fetchSavedJobIds(studentId)
+      setSaved(ids)
+    } catch (err) {
+      console.error('Failed to load saved jobs:', err.message)
+    } finally {
+      setLoading(false)
+    }
+  }, [studentId])
+
+  useEffect(() => {
+    refresh()
+  }, [refresh])
+
+  const toggle = useCallback(async (jobId) => {
+    if (!studentId) return
+    const nowSaved = await toggleSavedJobApi(studentId, jobId)
+    setSaved(prev => nowSaved ? [...prev, jobId] : prev.filter(id => id !== jobId))
+    return nowSaved
+  }, [studentId])
 
   const isSaved = useCallback((jobId) => saved.includes(jobId), [saved])
 
-  return { saved, toggle, isSaved }
+  return { saved, toggle, isSaved, loading, refresh }
 }

@@ -5,7 +5,7 @@ import { toast } from 'sonner'
 import {
   LayoutDashboard, Briefcase, FileText, Send, User,
   Users, PlusCircle, List, LogOut, ChevronRight, AlertTriangle, X,
-  GraduationCap, Building2,
+  GraduationCap, Building2, Bookmark,
 } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 import { getInitials } from '../../lib/utils'
@@ -14,6 +14,7 @@ import Logo from '../Logo'
 const studentLinks = [
   { to: '/student/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/student/jobs', icon: Briefcase, label: 'Browse Jobs' },
+  { to: '/student/saved', icon: Bookmark, label: 'Saved Jobs' },
   { to: '/student/resume', icon: FileText, label: 'My Resume' },
   { to: '/student/applications', icon: Send, label: 'Applications' }
 ]
