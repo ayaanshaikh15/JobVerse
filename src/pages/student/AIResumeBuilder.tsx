@@ -142,14 +142,14 @@ export default function AIResumeBuilder() {
   const handleGenerate = async () => {
     setGenerating(true)
     try {
+      let result
       if (!isGeminiConfigured()) {
         await new Promise(r => setTimeout(r, 2000))
-        setAiResult({ resume: fallbackResume(data), atsScore: 97, feedback: [] })
-        setGenerated(true)
+        result = { resume: fallbackResume(data), atsScore: 97, feedback: [] }
         toast.warning('Gemini API key not set — showing a demo result. Add VITE_GEMINI_API_KEY to .env for real AI generation.')
-        return
+      } else {
+        result = await generateResume(data)
       }
-      const result = await generateResume(data)
       setAiResult(result)
       setGenerated(true)
       setSaved(false)
